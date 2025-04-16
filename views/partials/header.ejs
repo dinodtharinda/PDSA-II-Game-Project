@@ -1,0 +1,16 @@
+<header class="bg-dark text-white py-3">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="m-0">PDSA-II Game Project</h2>
+      <div class="user-info">
+        <% if (typeof user !== 'undefined' && user) { %>
+          <span>Welcome, <%= user.name %></span>
+          <a href="/logout" class="btn btn-outline-light btn-sm ms-2">Logout</a>
+        <% } else { %>
+          <a href="/login" class="btn btn-outline-light btn-sm">Login</a>
+          <a href="/register" class="btn btn-light btn-sm ms-2">Register</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,113 @@
+/* Main stylesheet for PDSA-II Game Project */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+/* Custom card styles */
+.game-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 20px;
+  height: 100%;
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.game-card-img {
+  height: 180px;
+  object-fit: cover;
+}
+
+.game-card-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Alert styles */
+.alert {
+  border-radius: 0;
+  margin-bottom: 20px;
+}
+
+/* Button styles */
+.btn-game {
+  background-color: #3b5998;
+  color: white;
+  border: none;
+}
+
+.btn-game:hover {
+  background-color: #2d4373;
+  color: white;
+}
+
+/* Stats components */
+.stat-card {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #3b5998;
+}
+
+.stat-title {
+  font-size: 1rem;
+  color: #777;
+}
+
+/* Form components */
+.form-control:focus {
+  border-color: #3b5998;
+  box-shadow: 0 0 0 0.2rem rgba(59, 89, 152, 0.25);
+}
+
+/* Login/Register forms */
+.auth-form {
+  max-width: 450px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation active state */
+.navbar-light .navbar-nav .nav-link.active {
+  color: #3b5998;
+  font-weight: bold;
+}
+
+/* Custom table styles */
+.table-game {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table-game thead {
+  background-color: #3b5998;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}

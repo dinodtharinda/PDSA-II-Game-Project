@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link <%= path === '/' ? 'active' : '' %>" href="/">Home</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarGamesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Games
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarGamesDropdown">
+            <li><a class="dropdown-item <%= path === '/tic-tac-toe' ? 'active' : '' %>" href="/tic-tac-toe">Tic-Tac-Toe</a></li>
+            <li><a class="dropdown-item <%= path === '/traveling-salesman' ? 'active' : '' %>" href="/traveling-salesman">Traveling Salesman</a></li>
+            <li><a class="dropdown-item <%= path === '/tower-of-hanoi' ? 'active' : '' %>" href="/tower-of-hanoi">Tower of Hanoi</a></li>
+            <li><a class="dropdown-item <%= path === '/eight-queens' ? 'active' : '' %>" href="/eight-queens">Eight Queens</a></li>
+            <li><a class="dropdown-item <%= path === '/knights-tour' ? 'active' : '' %>" href="/knights-tour">Knight's Tour</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= path === '/stats' ? 'active' : '' %>" href="/stats">Statistics</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
