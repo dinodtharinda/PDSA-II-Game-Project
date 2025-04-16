@@ -3,9 +3,9 @@
 This document tracks the development progress of the PDSA-II Game Project. It will be updated regularly to reflect the current status of each component.
 
 ## Overall Progress
-![Progress](https://progress-bar.dev/25/ "Project Progress")
+![Progress](https://progress-bar.dev/40/ "Project Progress")
 
-Last updated: April 16, 2025
+Last updated: April 17, 2025
 
 ## Game Modules Status
 
@@ -40,20 +40,20 @@ Last updated: April 16, 2025
 | Unit Tests | 🔲 Not Started | |
 
 ### 3. Tower of Hanoi
-![Progress](https://progress-bar.dev/15/ "Tower of Hanoi Progress")
+![Progress](https://progress-bar.dev/100/ "Tower of Hanoi Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Disk and Tower UI | 🔄 In Progress | Basic tower visualization created |
-| Random Disk Selection | 🔄 In Progress | Implementation started |
-| Move Input Interface | 🔄 In Progress | Basic UI for move input created |
-| Recursive Algorithm | 🔲 Not Started | |
-| Iterative Algorithm | 🔲 Not Started | |
-| Performance Measurement | 🔲 Not Started | |
-| 4-Peg Extension | 🔲 Not Started | |
-| Solution Comparison | 🔲 Not Started | |
-| Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
+| Disk and Tower UI | ✅ Completed | Interactive tower and disk visualization implemented |
+| Random Disk Selection | ✅ Completed | Random disk count (5-10) generation implemented |
+| Move Input Interface | ✅ Completed | Click-based disk movement interface implemented |
+| Recursive Algorithm | ✅ Completed | Optimal algorithm for 3 pegs implemented |
+| Iterative Algorithm | ✅ Completed | Non-recursive solution implemented |
+| Performance Measurement | ✅ Completed | Execution time tracking implemented |
+| 4-Peg Extension | ✅ Completed | Frame-Stewart algorithm for 4 pegs implemented |
+| Solution Comparison | ✅ Completed | Comparison between algorithms implemented |
+| Database Integration | ✅ Completed | Game results saved to database |
+| Unit Tests | ✅ Completed | Core validation tests implemented |
 
 ### 4. Eight Queens Puzzle
 ![Progress](https://progress-bar.dev/15/ "Eight Queens Progress")
@@ -145,6 +145,12 @@ Last updated: April 16, 2025
 - Updated styling for consistent look and feel across all games
 - Implemented basic input validation for game interactions
 - Created API endpoints for game state management
+- **Completed Tower of Hanoi implementation:**
+  - Implemented interactive disk and tower visualization
+  - Added support for both 3 and 4 pegs
+  - Implemented three algorithms (recursive, iterative, and Frame-Stewart)
+  - Added performance tracking and comparison between algorithms
+  - Created animation for solution visualization
 
 ### Week 3 (Apr 23 - Apr 29, 2025)
 - [Updates will be added here]
