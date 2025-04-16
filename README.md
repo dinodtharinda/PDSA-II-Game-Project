@@ -10,6 +10,13 @@ This repository contains a collection of algorithmic games implemented as part o
   - [Tower of Hanoi](#tower-of-hanoi)
   - [Eight Queens Puzzle](#eight-queens-puzzle)
   - [Knight's Tour Problem](#knights-tour-problem)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Project](#running-the-project)
+- [Development Guide](#development-guide)
+  - [Game Development Workflow](#game-development-workflow)
+  - [Implementing a Game](#implementing-a-game)
 - [Deliverables](#deliverables)
 - [Evaluation Criteria](#evaluation-criteria)
 
@@ -80,6 +87,119 @@ An implementation of the Knight's Tour chess problem with random starting positi
 - Two different algorithmic approaches
 - Database storage of player information, correct solutions, and performance metrics
 - Unit testing and proper exception handling
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14.0.0 or higher)
+- npm (v6.0.0 or higher)
+- Git
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd game-project
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up the database:
+   ```bash
+   node scripts/seed.js
+   ```
+
+### Running the Project
+
+1. Start the development server:
+   ```bash
+   npm start
+   ```
+
+2. Access the application in your browser:
+   ```
+   http://localhost:3000
+   ```
+
+## Development Guide
+
+### Game Development Workflow
+
+The project follows this general workflow for each game:
+
+1. **Game Logic Development**: Implement the core game mechanics in the `game.js` file
+2. **UI Component Development**: Create the user interface in the `ui.js` file
+3. **Algorithm Implementation**: Implement required algorithms in the `algorithms/` directory
+4. **Testing**: Write unit tests in the `tests/` directory
+5. **Database Integration**: Connect game to database to store performance metrics
+6. **Validation & Exception Handling**: Add input validation and error handling
+
+### Implementing a Game
+
+Here's a step-by-step guide to implementing each game:
+
+#### 1. Tic-Tac-Toe
+
+1. Implement the 5×5 grid in `src/games/ticTacToe/ui.js`
+2. Create the game state management in `src/games/ticTacToe/game.js`
+3. Implement the Minimax algorithm in `src/games/ticTacToe/algorithms/minimax.js`
+4. Implement the Monte Carlo Tree Search in `src/games/ticTacToe/algorithms/mcts.js`
+5. Connect to the database using `src/models` to store game results
+6. Add unit tests in the `tests/` directory
+
+#### 2. Traveling Salesman Problem
+
+1. Implement the city selection UI in `src/games/tsp/ui.js`
+2. Create distance matrix generation in `src/games/tsp/game.js`
+3. Implement the three algorithms:
+   - Nearest Neighbor in `src/games/tsp/algorithms/nearestNeighbor.js`
+   - Dynamic Programming in `src/games/tsp/algorithms/dynamicProgramming.js`
+   - Genetic Algorithm in `src/games/tsp/algorithms/geneticAlgorithm.js`
+4. Add database connections for storing performance metrics
+5. Write unit tests for each component
+
+#### 3. Tower of Hanoi
+
+1. Create the disk and tower visualization in `src/games/towerOfHanoi/ui.js`
+2. Implement the game mechanics in `src/games/towerOfHanoi/game.js`
+3. Implement the algorithms:
+   - Recursive solution in `src/games/towerOfHanoi/algorithms/recursive.js`
+   - Iterative solution in `src/games/towerOfHanoi/algorithms/iterative.js`
+   - Frame-Stewart algorithm for 4 pegs in `src/games/towerOfHanoi/algorithms/frameStewart.js`
+4. Add performance measurement using the timer utility
+5. Connect to the database for storing solutions and metrics
+
+#### 4. Eight Queens Puzzle
+
+1. Create the chessboard UI in `src/games/eightQueens/ui.js`
+2. Implement game logic and queen placement validation in `src/games/eightQueens/game.js`
+3. Implement the algorithms:
+   - Sequential solution in `src/games/eightQueens/algorithms/sequential.js`
+   - Threaded solution in `src/games/eightQueens/algorithms/threaded.js`
+4. Add database connection for solution tracking
+5. Write performance comparison tests
+
+#### 5. Knight's Tour Problem
+
+1. Create the chessboard visualization in `src/games/knightsTour/ui.js`
+2. Implement starting position randomization in `src/games/knightsTour/game.js`
+3. Implement the algorithms:
+   - Backtracking in `src/games/knightsTour/algorithms/backtracking.js`
+   - Warnsdorff's algorithm in `src/games/knightsTour/algorithms/warnsdorff.js`
+4. Add database integration for storing performance metrics
+5. Write unit tests for move validation and algorithm correctness
+
+### Common Components To Use
+
+- Use the database connection in `src/config/db.js`
+- Use the performance timer in `src/utils/timer.js`
+- Use the validation utilities in `src/utils/validator.js`
+- Use the logger for debugging in `src/utils/logger.js`
 
 ## Deliverables
 
