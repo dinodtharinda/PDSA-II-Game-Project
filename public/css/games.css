@@ -1,0 +1,244 @@
+/* Tower of Hanoi Game Styles */
+
+/* Board container */
+.pegs-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    width: 100%;
+    height: 350px;
+    margin: 20px 0;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Peg styling */
+.peg-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    width: 30%;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.peg-container.selected {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 10px;
+}
+
+.peg {
+    width: 12px;
+    height: 220px;
+    background-color: #8b4513;
+    border-radius: 4px;
+    z-index: 1;
+    position: absolute;
+    bottom: 40px;
+}
+
+.peg-label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #333;
+}
+
+/* Disks styling */
+.disks-container {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    height: 220px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.disk {
+    height: 20px;
+    margin: 1px 0;
+    border-radius: 10px;
+    background: linear-gradient(to right, #3498db, #2980b9);
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+}
+
+.disk:hover {
+    transform: scale(1.05);
+}
+
+/* Controls styling */
+.game-controls {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.control-group {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.control-group label {
+    margin-right: 10px;
+    font-weight: bold;
+    min-width: 130px;
+}
+
+.control-group select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    background-color: white;
+    min-width: 150px;
+}
+
+/* Status container styling */
+.status-container {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #dee2e6;
+}
+
+.status-item {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.move-count {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Message area styling */
+.message-area {
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    min-height: 24px;
+}
+
+.message-info {
+    background-color: #cce5ff;
+    border: 1px solid #b8daff;
+    color: #004085;
+}
+
+.message-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.message-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.message-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    margin-right: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    border: none;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Add colors to disks */
+.disk[data-size="1"] { background: linear-gradient(to right, #e74c3c, #c0392b); }
+.disk[data-size="2"] { background: linear-gradient(to right, #f39c12, #d35400); }
+.disk[data-size="3"] { background: linear-gradient(to right, #2ecc71, #27ae60); }
+.disk[data-size="4"] { background: linear-gradient(to right, #3498db, #2980b9); }
+.disk[data-size="5"] { background: linear-gradient(to right, #9b59b6, #8e44ad); }
+.disk[data-size="6"] { background: linear-gradient(to right, #1abc9c, #16a085); }
+.disk[data-size="7"] { background: linear-gradient(to right, #f1c40f, #f39c12); }
+.disk[data-size="8"] { background: linear-gradient(to right, #e67e22, #d35400); }
+.disk[data-size="9"] { background: linear-gradient(to right, #e74c3c, #c0392b); }
+.disk[data-size="10"] { background: linear-gradient(to right, #95a5a6, #7f8c8d); }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pegs-container {
+        height: 300px;
+    }
+    
+    .peg {
+        height: 180px;
+        width: 10px;
+    }
+    
+    .disks-container {
+        height: 180px;
+    }
+    
+    .disk {
+        height: 18px;
+    }
+    
+    .control-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .control-group label {
+        margin-bottom: 5px;
+    }
+}
+
+/* Animation for solution display */
+@keyframes highlight {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.disk.highlight {
+    animation: highlight 0.5s ease;
+}
