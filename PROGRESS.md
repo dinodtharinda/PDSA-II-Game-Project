@@ -3,20 +3,20 @@
 This document tracks the development progress of the PDSA-II Game Project. It will be updated regularly to reflect the current status of each component.
 
 ## Overall Progress
-![Progress](https://progress-bar.dev/15/ "Project Progress")
+![Progress](https://progress-bar.dev/25/ "Project Progress")
 
 Last updated: April 16, 2025
 
 ## Game Modules Status
 
 ### 1. Tic-Tac-Toe
-![Progress](https://progress-bar.dev/5/ "Tic-Tac-Toe Progress")
+![Progress](https://progress-bar.dev/15/ "Tic-Tac-Toe Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| 5×5 Grid UI | 🔲 Not Started | |
-| Game Rules Implementation | 🔲 Not Started | |
-| Player Interaction | 🔲 Not Started | |
+| 5×5 Grid UI | 🔄 In Progress | Basic UI layout created |
+| Game Rules Implementation | 🔄 In Progress | Core rules defined |
+| Player Interaction | 🔄 In Progress | Click handlers implemented |
 | First AI Algorithm | 🔲 Not Started | |
 | Second AI Algorithm | 🔲 Not Started | |
 | Performance Measurement | 🔲 Not Started | |
@@ -25,13 +25,13 @@ Last updated: April 16, 2025
 | Validation & Exception Handling | 🔄 In Progress | Basic validation utilities implemented |
 
 ### 2. Traveling Salesman Problem
-![Progress](https://progress-bar.dev/5/ "TSP Progress")
+![Progress](https://progress-bar.dev/15/ "TSP Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Distance Matrix Generator | 🔲 Not Started | |
-| Random City Selection | 🔲 Not Started | |
-| City Selection UI | 🔲 Not Started | |
+| Distance Matrix Generator | 🔄 In Progress | Basic implementation complete |
+| Random City Selection | 🔄 In Progress | Randomization logic implemented |
+| City Selection UI | 🔄 In Progress | Basic UI components created |
 | First Route Algorithm | 🔲 Not Started | |
 | Second Route Algorithm | 🔲 Not Started | |
 | Third Route Algorithm | 🔲 Not Started | |
@@ -40,13 +40,13 @@ Last updated: April 16, 2025
 | Unit Tests | 🔲 Not Started | |
 
 ### 3. Tower of Hanoi
-![Progress](https://progress-bar.dev/5/ "Tower of Hanoi Progress")
+![Progress](https://progress-bar.dev/15/ "Tower of Hanoi Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Disk and Tower UI | 🔲 Not Started | |
-| Random Disk Selection | 🔲 Not Started | |
-| Move Input Interface | 🔲 Not Started | |
+| Disk and Tower UI | 🔄 In Progress | Basic tower visualization created |
+| Random Disk Selection | 🔄 In Progress | Implementation started |
+| Move Input Interface | 🔄 In Progress | Basic UI for move input created |
 | Recursive Algorithm | 🔲 Not Started | |
 | Iterative Algorithm | 🔲 Not Started | |
 | Performance Measurement | 🔲 Not Started | |
@@ -56,13 +56,13 @@ Last updated: April 16, 2025
 | Unit Tests | 🔲 Not Started | |
 
 ### 4. Eight Queens Puzzle
-![Progress](https://progress-bar.dev/5/ "Eight Queens Progress")
+![Progress](https://progress-bar.dev/15/ "Eight Queens Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Chessboard UI | 🔲 Not Started | |
-| Solution Verification | 🔲 Not Started | |
-| Solution Input Interface | 🔲 Not Started | |
+| Chessboard UI | 🔄 In Progress | Basic board rendering complete |
+| Solution Verification | 🔄 In Progress | Basic validation logic implemented |
+| Solution Input Interface | 🔄 In Progress | Queen placement UI created |
 | Sequential Algorithm | 🔲 Not Started | |
 | Threaded Algorithm | 🔲 Not Started | |
 | Performance Comparison | 🔲 Not Started | |
@@ -71,13 +71,13 @@ Last updated: April 16, 2025
 | Unit Tests | 🔲 Not Started | |
 
 ### 5. Knight's Tour Problem
-![Progress](https://progress-bar.dev/5/ "Knight's Tour Progress")
+![Progress](https://progress-bar.dev/15/ "Knight's Tour Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Chessboard UI | 🔲 Not Started | |
-| Random Start Position | 🔲 Not Started | |
-| Move Sequence Input | 🔲 Not Started | |
+| Chessboard UI | 🔄 In Progress | Basic board visualization complete |
+| Random Start Position | 🔄 In Progress | Randomization logic implemented |
+| Move Sequence Input | 🔄 In Progress | Basic UI for move input created |
 | First Tour Algorithm | 🔲 Not Started | |
 | Second Tour Algorithm | 🔲 Not Started | |
 | Performance Measurement | 🔲 Not Started | |
@@ -85,7 +85,7 @@ Last updated: April 16, 2025
 | Unit Tests | 🔲 Not Started | |
 
 ## Common Components
-![Progress](https://progress-bar.dev/60/ "Common Components Progress")
+![Progress](https://progress-bar.dev/75/ "Common Components Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -96,31 +96,33 @@ Last updated: April 16, 2025
 | Performance Framework | ✅ Completed | Timer utility implemented |
 | Validation Utilities | ✅ Completed | Validator class implemented with game-specific validations |
 | Logging Utilities | ✅ Completed | Logger utility implemented |
+| User Authentication | 🔄 In Progress | Basic login/register routes set up |
+| Responsive Design | ✅ Completed | Mobile-friendly UI components implemented |
 
 ## Deliverables Status
 
 | Deliverable | Status | Due Date | Notes |
 |-------------|--------|----------|-------|
-| Software Implementation | 🔄 In Progress | Jul 2, 2025 | Basic infrastructure set up |
-| Database with Data Dump | 🔄 In Progress | Jul 5, 2025 | Schema defined and initial seed data created |
-| Individual Reports | 🔲 Not Started | Jul 9, 2025 | |
-| Group Report | 🔲 Not Started | Jul 12, 2025 | |
-| Video Demonstration | 🔲 Not Started | Jul 15, 2025 | |
+| Software Implementation | 🔄 In Progress | Apr 30, 2025 | Basic infrastructure and UI components implemented |
+| Database with Data Dump | 🔄 In Progress | Apr 30, 2025 | Schema defined and initial seed data created |
+| Individual Reports | 🔲 Not Started | Apr 30, 2025 | |
+| Group Report | 🔲 Not Started | Apr 30, 2025 | |
+| Video Demonstration | 🔲 Not Started | Apr 30, 2025 | |
 
 ## Milestones
 
 | Milestone | Target Date | Status | Notes |
 |-----------|-------------|--------|-------|
-| Planning Phase Completion | Apr 30, 2025 | 🔄 In Progress | Project structure and plan completed |
-| Development I Phase Completion | May 21, 2025 | 🔲 Not Started | |
-| Development II Phase Completion | Jun 11, 2025 | 🔲 Not Started | |
-| Testing Phase Completion | Jun 25, 2025 | 🔲 Not Started | |
-| Documentation Phase Completion | Jul 9, 2025 | 🔲 Not Started | |
-| Project Submission | Jul 16, 2025 | 🔲 Not Started | |
+| Planning Phase Completion | Apr 16, 2025 | ✅ Completed | Project structure and plan completed |
+| Development I Phase Completion | Apr 23, 2025 | 🔄 In Progress | UI components and basic functionality being implemented |
+| Development II Phase Completion | Apr 30, 2025 | 🔲 Not Started | |
+| Testing Phase Completion | May 7, 2025 | 🔲 Not Started | |
+| Documentation Phase Completion | May 14, 2025 | 🔲 Not Started | |
+| Project Submission | May 15, 2025 | 🔲 Not Started | |
 
 ## Weekly Updates
 
-### Week 1 (Apr 16 - Apr 22, 2025)
+### Week 1 (Apr 9 - Apr 15, 2025)
 - Project repository initialized
 - PLAN.md and PROGRESS.md created
 - Project structure set up
@@ -132,7 +134,19 @@ Last updated: April 16, 2025
 - Common UI components implemented (header, footer, navigation)
 - Basic styling added with CSS
 
-### Week 2 (Apr 23 - Apr 29, 2025)
+### Week 2 (Apr 16 - Apr 22, 2025)
+- Enhanced UI for all game modules:
+  - Implemented responsive designs for mobile devices
+  - Created basic game layouts for each module
+  - Added user interaction components (buttons, input fields)
+- Started implementation of game logic for all modules
+- Improved authentication system with session management
+- Added Bootstrap styling to all views
+- Updated styling for consistent look and feel across all games
+- Implemented basic input validation for game interactions
+- Created API endpoints for game state management
+
+### Week 3 (Apr 23 - Apr 29, 2025)
 - [Updates will be added here]
 
 ## How to Update This Document

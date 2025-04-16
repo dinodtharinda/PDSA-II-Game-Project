@@ -4,10 +4,10 @@
  */
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const logger = require('../src/utils/logger');
+const logger = require('../../src/utils/logger');
 
 // Connect to database
-const dbPath = path.join(__dirname, '..', 'database', 'game.db');
+const dbPath = path.join(__dirname, '..', 'game.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     logger.error(`Database connection error: ${err.message}`);
