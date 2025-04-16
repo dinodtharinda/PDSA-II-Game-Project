@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
+const expressLayouts = require('express-ejs-layouts');
 
 // Import routes
 const apiRoutes = require('./src/routes/api');
@@ -22,6 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
 
 // Routes
 app.use('/', pageRoutes);
