@@ -97,7 +97,10 @@ header.bg-dark {
 
 .game-card-img {
   height: 180px;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: #f8f9fa;
+  padding: 15px;
+  max-width: 100%;
 }
 
 .game-card-title {
