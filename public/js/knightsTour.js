@@ -489,108 +489,110 @@ class KnightsTourUI {
     }
     
     async solveWithBacktracking() {
-        // Implementation of backtracking algorithm for client-side solver
+        // Pure backtracking implementation for Knight's Tour
         const board = [];
         const size = this.game.size;
+        
+        // Knight's move patterns (8 possible moves)
         const moveX = [2, 1, -1, -2, -2, -1, 1, 2];
         const moveY = [1, 2, 2, 1, -1, -2, -2, -1];
+        
         const startPos = { ...this.game.startPosition };
         const solution = [startPos];
+        
+        // Track progress for user feedback
+        let attemptsCount = 0;
+        const startTime = Date.now();
         
         // Initialize board with -1 (unvisited)
         for (let i = 0; i < size; i++) {
             board[i] = new Array(size).fill(-1);
         }
         
-        // Mark start position
+        // Mark start position as visited (move 0)
         board[startPos.row][startPos.col] = 0;
         
-        // Track execution time
-        const startTime = Date.now();
-        const maxExecutionTime = 5000; // 5 seconds max execution time
-        
-        // Add a timeout promise that rejects after maxExecutionTime
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Backtracking timeout")), maxExecutionTime);
-        });
+        // Set up progress reporting
+        let progressInterval = setInterval(() => {
+            this.setMessage(`Pure backtracking in progress... (${attemptsCount.toLocaleString()} attempts, ${((Date.now() - startTime) / 1000).toFixed(1)}s)`, 'message-info');
+        }, 300);
         
         try {
-            // Race between the backtracking solution and the timeout
-            const found = await Promise.race([
-                this.backtrackingSolve(board, startPos.row, startPos.col, 1, size, moveX, moveY, solution, startTime, maxExecutionTime),
-                timeoutPromise
-            ]);
+            // Start the recursive backtracking process
+            const found = await this.backtrackingSolve(
+                board, startPos.row, startPos.col, 1, size, moveX, moveY, solution, 
+                () => { attemptsCount++; }
+            );
             
-            return found ? solution : null;
+            // Clear the progress interval
+            clearInterval(progressInterval);
+            
+            // Report the result
+            if (found) {
+                this.setMessage(`Solution found using pure backtracking after ${attemptsCount.toLocaleString()} attempts in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds!`, 'message-success');
+                return solution;
+            } else {
+                this.setMessage(`Backtracking could not find a solution after ${attemptsCount.toLocaleString()} attempts.`, 'message-warning');
+                return null;
+            }
         } catch (error) {
-            console.warn("Backtracking algorithm timed out", error);
-            this.setMessage("Backtracking algorithm timed out. Try a smaller board or use Warnsdorff's algorithm.", 'message-warning');
-            
-            // If backtracking fails due to timeout, fall back to Warnsdorff's algorithm
-            this.setMessage("Falling back to Warnsdorff's algorithm...", 'message-info');
-            return this.solveWithWarnsdorff();
+            clearInterval(progressInterval);
+            console.error("Error in backtracking:", error);
+            this.setMessage(`Error during backtracking search: ${error.message}`, 'message-error');
+            return null;
         }
     }
     
-    async backtrackingSolve(board, x, y, moveCount, size, moveX, moveY, solution, startTime, maxExecutionTime) {
-        // Break up long-running computation and check for timeout
-        if (moveCount % 5 === 0) {
+    async backtrackingSolve(board, x, y, moveCount, size, moveX, moveY, solution, progressCallback) {
+        // Periodically yield to the browser to prevent freezing
+        // Less frequent yields for better performance
+        if (moveCount % 8 === 0) {
             await new Promise(resolve => setTimeout(resolve, 0));
-            
-            // Check if we've exceeded the maximum execution time
-            if (Date.now() - startTime > maxExecutionTime) {
-                throw new Error("Backtracking timeout");
-            }
         }
         
-        // Base case: all squares visited
+        // Count this attempt
+        if (progressCallback) progressCallback();
+        
+        // Base case: all squares are visited
         if (moveCount === size * size) {
-            return true;
+            return true; // Tour completed!
         }
         
-        // Use Warnsdorff's heuristic to sort moves by accessibility
-        // This often leads to finding a solution faster
-        const possibleMoves = [];
+        // Try each possible knight move in order
         for (let i = 0; i < 8; i++) {
             const nextX = x + moveX[i];
             const nextY = y + moveY[i];
             
+            // Check if this is a valid move
             if (this.isValidBacktrackingMove(nextX, nextY, board, size)) {
-                // Count the number of valid moves from this position
-                let accessibility = 0;
-                for (let j = 0; j < 8; j++) {
-                    const futureX = nextX + moveX[j];
-                    const futureY = nextY + moveY[j];
-                    if (this.isValidBacktrackingMove(futureX, futureY, board, size)) {
-                        accessibility++;
-                    }
+                // Make the move
+                board[nextX][nextY] = moveCount;
+                solution.push({ row: nextX, col: nextY });
+                
+                // Recursively try to solve from this new position
+                if (await this.backtrackingSolve(board, nextX, nextY, moveCount + 1, size, moveX, moveY, solution, progressCallback)) {
+                    return true; // Solution found
                 }
-                possibleMoves.push({ x: nextX, y: nextY, accessibility });
+                
+                // Backtrack if no solution found from this position
+                board[nextX][nextY] = -1;
+                solution.pop();
             }
         }
         
-        // Sort moves by accessibility (fewest accessible squares first)
-        // This is Warnsdorff's heuristic applied to backtracking
-        possibleMoves.sort((a, b) => a.accessibility - b.accessibility);
-        
-        // Try moves in sorted order
-        for (const move of possibleMoves) {
-            const nextX = move.x;
-            const nextY = move.y;
-            
-            board[nextX][nextY] = moveCount;
-            solution.push({ row: nextX, col: nextY });
-            
-            if (await this.backtrackingSolve(board, nextX, nextY, moveCount + 1, size, moveX, moveY, solution, startTime, maxExecutionTime)) {
-                return true;
-            }
-            
-            // Backtrack
-            board[nextX][nextY] = -1;
-            solution.pop();
-        }
-        
+        // No solution found from current position
         return false;
+    }
+    
+    isValidBacktrackingMove(x, y, board, size) {
+        // A move is valid if:
+        // 1. It's within the board boundaries
+        // 2. The square has not been visited yet
+        return (
+            x >= 0 && y >= 0 && 
+            x < size && y < size && 
+            board[x][y] === -1
+        );
     }
     
     async solveWithWarnsdorff() {

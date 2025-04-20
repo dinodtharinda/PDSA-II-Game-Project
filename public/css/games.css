@@ -497,14 +497,35 @@
 
 .chess-board .cell.visited {
     opacity: 0.9;
+    position: relative;
+}
+
+.chess-board .cell.visited::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(255, 0, 25, 0.7); /* Red tint with 70% opacity */
+    pointer-events: none;
+    z-index: 1;
 }
 
 .chess-board .cell.start {
     box-shadow: inset 0 0 0 3px #1976d2;
 }
 
+.chess-board .cell.start::after {
+    background-color: rgba(0, 123, 255, 0.25); /* Blue tint for start position */
+}
+
 .chess-board .cell.current {
     box-shadow: inset 0 0 8px rgba(255, 152, 0, 0.7);
+}
+
+.chess-board .cell.current::after {
+    background-color: rgba(255, 193, 7, 0.3); /* Yellow tint for current position */
 }
 
 .move-number {
