@@ -242,3 +242,202 @@
 .disk.highlight {
     animation: highlight 0.5s ease;
 }
+
+/* Tic Tac Toe Game Styles */
+.tic-tac-toe-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: clamp(4px, 1.5vw, 10px);
+    padding: clamp(10px, 3vw, 20px);
+    background-color: #f5f5f5;
+    border-radius: clamp(8px, 2vw, 10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.tic-tac-toe-grid .cell {
+    aspect-ratio: 1;
+    background-color: white;
+    border-radius: clamp(4px, 1vw, 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.tic-tac-toe-grid .cell:hover:empty {
+    background-color: #e9ecef;
+    transform: scale(1.05);
+}
+
+.tic-tac-toe-grid .cell.X {
+    color: #007bff;
+    cursor: default;
+}
+
+.tic-tac-toe-grid .cell.O {
+    color: #dc3545;
+    cursor: default;
+}
+
+.game-status {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    margin: clamp(10px, 3vw, 20px) 0;
+    padding: clamp(8px, 2vw, 10px);
+    text-align: center;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    min-height: 30px;
+}
+
+/* Responsive button styles */
+.btn {
+    padding: clamp(6px, 2vw, 8px) clamp(12px, 3vw, 16px);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    margin: clamp(5px, 1.5vw, 10px);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    border: none;
+    touch-action: manipulation;
+}
+
+/* Game description and rules */
+.game-description {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    line-height: 1.5;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.card {
+    margin-bottom: clamp(15px, 4vw, 30px);
+}
+
+.card-header h4 {
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    margin: 0;
+}
+
+.card-body {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .tic-tac-toe-grid .cell:hover:empty {
+        transform: none;
+        background-color: white;
+    }
+
+    .tic-tac-toe-grid .cell:active:empty {
+        background-color: #e9ecef;
+        transform: scale(0.95);
+    }
+}
+
+/* Small screen optimizations */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 10px;
+    }
+
+    .control-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .control-group label {
+        margin-bottom: 5px;
+    }
+
+    .control-group select {
+        width: 100%;
+        max-width: none;
+    }
+
+    .btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+
+/* Visual feedback animations */
+@keyframes cellPlace {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes thinking {
+    0% { opacity: 0.7; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0.7; }
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(0, 123, 255, 0.1); }
+    100% { background-color: transparent; }
+}
+
+/* Loading indicator */
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    z-index: 10;
+}
+
+/* Animate cell placement */
+.tic-tac-toe-grid .cell.X,
+.tic-tac-toe-grid .cell.O {
+    animation: cellPlace 0.3s ease-out forwards;
+}
+
+/* AI thinking state */
+.ai-thinking .tic-tac-toe-grid {
+    animation: thinking 1.5s ease-in-out infinite;
+}
+
+/* Player turn indicator */
+.tic-tac-toe-grid.player-turn {
+    position: relative;
+}
+
+.tic-tac-toe-grid.player-turn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 2px solid #007bff;
+    border-radius: clamp(10px, 2.5vw, 12px);
+    opacity: 0.5;
+    animation: highlight 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Performance optimizations */
+.tic-tac-toe-grid {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.cell {
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
