@@ -4,7 +4,7 @@ This document tracks the development progress of the PDSA-II Game Project. It wi
 
 ## Overall Progress
 
-Last updated: April 20, 2025
+Last updated: April 21, 2025
 
 ## Game Modules Status
 
@@ -18,8 +18,8 @@ Last updated: April 20, 2025
 | First AI Algorithm | ✅ Completed | Minimax with alpha-beta pruning implemented |
 | Second AI Algorithm | ✅ Completed | Monte Carlo Tree Search (MCTS) implemented |
 | Performance Measurement | ✅ Completed | Move timing and algorithm comparison added |
-| Database Integration | 🔄 In Progress | Base tables created, pending game result storage |
 | Validation & Exception Handling | ✅ Completed | Move validation and error handling implemented |
+| Database Integration | 🔄 In Progress | Base tables created, pending game result storage |
 
 ### 2. Traveling Salesman Problem
 
@@ -33,7 +33,6 @@ Last updated: April 20, 2025
 | Third Route Algorithm | 🔲 Not Started | |
 | Performance Comparison | 🔲 Not Started | |
 | Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
 
 ### 3. Tower of Hanoi
 
@@ -47,7 +46,7 @@ Last updated: April 20, 2025
 | Performance Measurement | ✅ Completed | Execution time tracking implemented |
 | 4-Peg Extension | ✅ Completed | Frame-Stewart algorithm for 4 pegs implemented |
 | Solution Comparison | ✅ Completed | Comparison between algorithms implemented |
-| Database Integration | ✅ Completed | Game results saved to database |
+| Database Integration | 🔄 In Progress | Game results saved to database |
 
 ### 4. Eight Queens Puzzle
 
@@ -61,20 +60,18 @@ Last updated: April 20, 2025
 | Performance Comparison | 🔲 Not Started | |
 | Solution Tracking | 🔲 Not Started | |
 | Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
 
 ### 5. Knight's Tour Problem
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Chessboard UI | 🔄 In Progress | Basic board visualization complete |
-| Random Start Position | 🔄 In Progress | Randomization logic implemented |
-| Move Sequence Input | 🔄 In Progress | Basic UI for move input created |
-| First Tour Algorithm | 🔲 Not Started | |
-| Second Tour Algorithm | 🔲 Not Started | |
-| Performance Measurement | 🔲 Not Started | |
-| Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
+| Chessboard UI | ✅ Completed | Interactive chess board visualization with coordinate labels and move indicators |
+| Random Start Position | ✅ Completed | Random starting position generation with option to reset to same position |
+| Move Sequence Input | ✅ Completed | Click-based move input with validation and visual feedback |
+| First Tour Algorithm | ✅ Completed | Backtracking algorithm implemented with progress reporting |
+| Second Tour Algorithm | ✅ Completed | Warnsdorff's heuristic algorithm implemented for optimized solution |
+| Performance Measurement | ✅ Completed | Execution timing and move count metrics displayed |
+| Database Integration | 🔄 In Progress | Client-side implementation with compatibility for server-side database storage |
 
 ## Common Components
 
@@ -136,20 +133,27 @@ Last updated: April 20, 2025
 - Updated styling for consistent look and feel across all games
 - Implemented basic input validation for game interactions
 - Created API endpoints for game state management
-- **Completed Tower of Hanoi implementation:**
+- **Started Tower of Hanoi implementation:**
   - Implemented interactive disk and tower visualization
   - Added support for both 3 and 4 pegs
   - Implemented three algorithms (recursive, iterative, and Frame-Stewart)
   - Added performance tracking and comparison between algorithms
   - Created animation for solution visualization
   - Added comprehensive unit tests and error handling
-  - Completed database integration for metrics
-- **Advanced Tic-Tac-Toe implementation:**
+  - Pending database integration
+- **Started Tic-Tac-Toe implementation:**
   - Completed 5×5 grid implementation with responsive design
   - Implemented both Minimax and MCTS AI algorithms
   - Added performance measurement and algorithm comparison
   - Created mobile-friendly UI with touch support
-  - Pending: Database integration and unit tests
+  - Pending: Database integration
+- **Started implementation of Knight's Tour:**
+  - Created interactive chessboard with coordinate labels
+  - Implemented random start position generation
+  - Added click-based move input with validation
+  - Implemented backtracking and Warnsdorff's heuristic algorithms
+  - Added performance measurement and move count metrics
+  - Pending database integration
 
 ### Week 3 (Apr 23 - Apr 29, 2025)
 - [Updates will be added here]
