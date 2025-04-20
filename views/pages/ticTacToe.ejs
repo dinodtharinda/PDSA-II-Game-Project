@@ -1,0 +1,81 @@
+<%- contentFor('body') %>
+
+<div class="container game-container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Tic Tac Toe</h1>
+            <p class="game-description">
+                Play against the computer on a 5×5 grid. Get four in a row horizontally, vertically, or diagonally to win!
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="tic-tac-toe-board" class="game-board"></div>
+            <div id="tic-tac-toe-controls" class="game-controls"></div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Game Rules</h4>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>You play as X, computer plays as O</li>
+                        <li>Players take turns placing their symbol on empty cells</li>
+                        <li>Get four symbols in a row (horizontally, vertically, or diagonally) to win</li>
+                        <li>The game ends in a draw if all cells are filled without a winner</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Algorithms</h4>
+                </div>
+                <div class="card-body">
+                    <p>The computer uses advanced algorithms to determine its moves:</p>
+                    <ul>
+                        <li><strong>Minimax Algorithm:</strong> A recursive algorithm that simulates all possible moves to find the optimal play.</li>
+                        <li><strong>Monte Carlo Tree Search:</strong> An alternative approach that uses random simulations to evaluate moves.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load game styles
+        const gameStyles = document.createElement('link');
+        gameStyles.rel = 'stylesheet';
+        gameStyles.href = '/css/games.css';
+        document.head.appendChild(gameStyles);
+        
+        // Initialize game
+        initTicTacToe();
+    });
+    
+    function initTicTacToe() {
+        const gameScript = document.createElement('script');
+        gameScript.src = '/js/ticTacToeBundle.js';
+        gameScript.onload = function() {
+            if (typeof TicTacToeUI !== 'undefined') {
+                const gameUI = new TicTacToeUI();
+                gameUI.initialize('tic-tac-toe-board', 'tic-tac-toe-controls');
+            } else {
+                console.error('Tic Tac Toe UI module not found');
+            }
+        };
+        document.body.appendChild(gameScript);
+    }
+</script>
