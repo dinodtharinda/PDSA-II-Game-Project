@@ -1,10 +1,118 @@
 /**
- * Eight Queens UI Component
- * Handles rendering and user interaction for the chessboard
+ * Eight Queens Bundle
+ * Combines all components for browser use
  */
 
-const EightQueens = require('./game');
+// Game Logic
+class EightQueens {
+    constructor() {
+        this.board = Array(8).fill().map(() => Array(8).fill(false));
+        this.queens = [];
+        this.gameId = null;
+        this.timer = {
+            start: function() {},
+            stop: function() { return Date.now(); }
+        };
+        this.isComplete = false;
+    }
 
+    async initialize() {
+        this.board = Array(8).fill().map(() => Array(8).fill(false));
+        this.queens = [];
+        this.isComplete = false;
+        this.timer.start();
+    }
+
+    static positionToCoordinates(position) {
+        const col = position.charCodeAt(0) - 'a'.charCodeAt(0);
+        const row = 8 - parseInt(position[1]);
+        return { row, col };
+    }
+
+    static coordinatesToPosition(row, col) {
+        const colLetter = String.fromCharCode('a'.charCodeAt(0) + col);
+        const rowNumber = 8 - row;
+        return `${colLetter}${rowNumber}`;
+    }
+
+    placeQueen(position) {
+        try {
+            // Validate the new placement
+            const { row, col } = EightQueens.positionToCoordinates(position);
+            
+            // Check if any existing queen can attack this position
+            if (this.isUnderAttack(position)) {
+                return false;
+            }
+            
+            // Place the queen
+            this.board[row][col] = true;
+            this.queens.push(position);
+
+            // Check if puzzle is complete
+            if (this.queens.length === 8) {
+                this.isComplete = true;
+                this.endGame();
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`Invalid queen placement: ${error.message}`);
+            return false;
+        }
+    }
+
+    removeQueen(position) {
+        const index = this.queens.indexOf(position);
+        if (index === -1) return false;
+
+        const { row, col } = EightQueens.positionToCoordinates(position);
+        this.board[row][col] = false;
+        this.queens.splice(index, 1);
+        this.isComplete = false;
+        return true;
+    }
+
+    isUnderAttack(position) {
+        const { row, col } = EightQueens.positionToCoordinates(position);
+        
+        // Check if any existing queen can attack this position
+        for (const queenPos of this.queens) {
+            const queen = EightQueens.positionToCoordinates(queenPos);
+            
+            // Same row or column
+            if (queen.row === row || queen.col === col) return true;
+            
+            // Diagonal
+            if (Math.abs(queen.row - row) === Math.abs(queen.col - col)) return true;
+        }
+        
+        return false;
+    }
+
+    async endGame() {
+        const endTime = this.timer.stop();
+        console.log(`Eight Queens puzzle completed in ${endTime}ms`);
+    }
+
+    getGameState() {
+        return {
+            board: this.board.map(row => [...row]),
+            queens: [...this.queens],
+            isComplete: this.isComplete,
+            gameId: this.gameId
+        };
+    }
+
+    reset() {
+        this.board = Array(8).fill().map(() => Array(8).fill(false));
+        this.queens = [];
+        this.isComplete = false;
+        this.timer.start();
+    }
+}
+
+// UI Component
 class EightQueensUI {
     constructor() {
         this.game = new EightQueens();
@@ -20,11 +128,6 @@ class EightQueensUI {
         this.handleResetClick = this.handleResetClick.bind(this);
     }
 
-    /**
-     * Initialize the UI components
-     * @param {string} boardElementId - Board container element ID
-     * @param {string} controlsElementId - Controls container element ID
-     */
     async initialize(boardElementId = 'queens-board', controlsElementId = 'queens-controls') {
         // Initialize board container
         this.boardElement = document.getElementById(boardElementId);
@@ -55,11 +158,6 @@ class EightQueensUI {
         this.render();
     }
 
-    /**
-     * Handle cell click event
-     * @param {number} row - Row index
-     * @param {number} col - Column index
-     */
     handleCellClick(row, col) {
         const position = EightQueens.coordinatesToPosition(row, col);
         const state = this.game.getGameState();
@@ -77,17 +175,11 @@ class EightQueensUI {
         }
     }
 
-    /**
-     * Handle reset button click
-     */
     async handleResetClick() {
         await this.game.initialize();
         this.render();
     }
 
-    /**
-     * Render the game board
-     */
     render() {
         // Clear board
         this.boardElement.innerHTML = '';
@@ -133,9 +225,6 @@ class EightQueensUI {
         this.statusElement.textContent = statusText;
     }
 
-    /**
-     * Clean up event listeners
-     */
     cleanup() {
         if (this.resetButtonElement) {
             this.resetButtonElement.removeEventListener('click', this.handleResetClick);
@@ -143,4 +232,12 @@ class EightQueensUI {
     }
 }
 
-module.exports = EightQueensUI;
+// Export classes for global use
+window.EightQueens = EightQueens;
+window.EightQueensUI = EightQueensUI;
+
+// Initialize game when document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const gameUI = new EightQueensUI();
+    gameUI.initialize('queens-board', 'queens-controls').catch(console.error);
+});
