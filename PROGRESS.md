@@ -3,29 +3,25 @@
 This document tracks the development progress of the PDSA-II Game Project. It will be updated regularly to reflect the current status of each component.
 
 ## Overall Progress
-![Progress](https://progress-bar.dev/40/ "Project Progress")
 
-Last updated: April 17, 2025
+Last updated: April 21, 2025
 
 ## Game Modules Status
 
 ### 1. Tic-Tac-Toe
-![Progress](https://progress-bar.dev/15/ "Tic-Tac-Toe Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| 5×5 Grid UI | 🔄 In Progress | Basic UI layout created |
-| Game Rules Implementation | 🔄 In Progress | Core rules defined |
-| Player Interaction | 🔄 In Progress | Click handlers implemented |
-| First AI Algorithm | 🔲 Not Started | |
-| Second AI Algorithm | 🔲 Not Started | |
-| Performance Measurement | 🔲 Not Started | |
-| Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
-| Validation & Exception Handling | 🔄 In Progress | Basic validation utilities implemented |
+| 5×5 Grid UI | ✅ Completed | Responsive grid with cell animations implemented |
+| Game Rules Implementation | ✅ Completed | Win checking, draw detection, and turn management implemented |
+| Player Interaction | ✅ Completed | Click/touch handlers with mobile optimization |
+| First AI Algorithm | ✅ Completed | Minimax with alpha-beta pruning implemented |
+| Second AI Algorithm | ✅ Completed | Monte Carlo Tree Search (MCTS) implemented |
+| Performance Measurement | ✅ Completed | Move timing and algorithm comparison added |
+| Validation & Exception Handling | ✅ Completed | Move validation and error handling implemented |
+| Database Integration | 🔄 In Progress | Base tables created, pending game result storage |
 
 ### 2. Traveling Salesman Problem
-![Progress](https://progress-bar.dev/15/ "TSP Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -37,10 +33,8 @@ Last updated: April 17, 2025
 | Third Route Algorithm | 🔲 Not Started | |
 | Performance Comparison | 🔲 Not Started | |
 | Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
 
 ### 3. Tower of Hanoi
-![Progress](https://progress-bar.dev/100/ "Tower of Hanoi Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -52,11 +46,9 @@ Last updated: April 17, 2025
 | Performance Measurement | ✅ Completed | Execution time tracking implemented |
 | 4-Peg Extension | ✅ Completed | Frame-Stewart algorithm for 4 pegs implemented |
 | Solution Comparison | ✅ Completed | Comparison between algorithms implemented |
-| Database Integration | ✅ Completed | Game results saved to database |
-| Unit Tests | ✅ Completed | Core validation tests implemented |
+| Database Integration | 🔄 In Progress | Game results saved to database |
 
 ### 4. Eight Queens Puzzle
-![Progress](https://progress-bar.dev/15/ "Eight Queens Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -68,24 +60,20 @@ Last updated: April 17, 2025
 | Performance Comparison | 🔲 Not Started | |
 | Solution Tracking | 🔲 Not Started | |
 | Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
 
 ### 5. Knight's Tour Problem
-![Progress](https://progress-bar.dev/15/ "Knight's Tour Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Chessboard UI | 🔄 In Progress | Basic board visualization complete |
-| Random Start Position | 🔄 In Progress | Randomization logic implemented |
-| Move Sequence Input | 🔄 In Progress | Basic UI for move input created |
-| First Tour Algorithm | 🔲 Not Started | |
-| Second Tour Algorithm | 🔲 Not Started | |
-| Performance Measurement | 🔲 Not Started | |
-| Database Integration | 🔄 In Progress | Base tables created |
-| Unit Tests | 🔲 Not Started | |
+| Chessboard UI | ✅ Completed | Interactive chess board visualization with coordinate labels and move indicators |
+| Random Start Position | ✅ Completed | Random starting position generation with option to reset to same position |
+| Move Sequence Input | ✅ Completed | Click-based move input with validation and visual feedback |
+| First Tour Algorithm | ✅ Completed | Backtracking algorithm implemented with progress reporting |
+| Second Tour Algorithm | ✅ Completed | Warnsdorff's heuristic algorithm implemented for optimized solution |
+| Performance Measurement | ✅ Completed | Execution timing and move count metrics displayed |
+| Database Integration | 🔄 In Progress | Client-side implementation with compatibility for server-side database storage |
 
 ## Common Components
-![Progress](https://progress-bar.dev/75/ "Common Components Progress")
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -145,17 +133,32 @@ Last updated: April 17, 2025
 - Updated styling for consistent look and feel across all games
 - Implemented basic input validation for game interactions
 - Created API endpoints for game state management
-- **Completed Tower of Hanoi implementation:**
+- **Started Tower of Hanoi implementation:**
   - Implemented interactive disk and tower visualization
   - Added support for both 3 and 4 pegs
   - Implemented three algorithms (recursive, iterative, and Frame-Stewart)
   - Added performance tracking and comparison between algorithms
   - Created animation for solution visualization
+  - Added comprehensive unit tests and error handling
+  - Pending database integration
+- **Started Tic-Tac-Toe implementation:**
+  - Completed 5×5 grid implementation with responsive design
+  - Implemented both Minimax and MCTS AI algorithms
+  - Added performance measurement and algorithm comparison
+  - Created mobile-friendly UI with touch support
+  - Pending: Database integration
+- **Started implementation of Knight's Tour:**
+  - Created interactive chessboard with coordinate labels
+  - Implemented random start position generation
+  - Added click-based move input with validation
+  - Implemented backtracking and Warnsdorff's heuristic algorithms
+  - Added performance measurement and move count metrics
+  - Pending database integration
 
 ### Week 3 (Apr 23 - Apr 29, 2025)
 - [Updates will be added here]
 
-## How to Update This Document
+# How to Update This Document
 
 1. Change the component status using the following symbols:
    - 🔲 Not Started

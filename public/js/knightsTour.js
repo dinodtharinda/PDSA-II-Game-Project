@@ -1,25 +1,197 @@
 /**
- * Knight's Tour UI Component
- * This module implements the UI components for the Knight's Tour game
+ * Knight's Tour client-side script
+ * This file bundles the game logic and UI components for the browser
  */
 
+// Game state and logic
+class KnightsTour {
+    constructor(size = 8) {
+        this.size = size;
+        this.board = this.createEmptyBoard();
+        this.currentPosition = null;
+        this.startPosition = null;
+        this.moveSequence = [];
+        this.isGameActive = true;
+        this.timer = { start: Date.now() };
+    }
+
+    createEmptyBoard() {
+        const board = [];
+        for (let i = 0; i < this.size; i++) {
+            board[i] = new Array(this.size).fill(null);
+        }
+        return board;
+    }
+
+    initializeGame(startPos = null) {
+        this.board = this.createEmptyBoard();
+        this.moveSequence = [];
+        this.isGameActive = true;
+        this.timer.start = Date.now();
+        
+        // Generate random start position if not provided
+        if (!startPos) {
+            startPos = {
+                row: Math.floor(Math.random() * this.size),
+                col: Math.floor(Math.random() * this.size)
+            };
+        }
+        
+        // Set the starting position
+        this.startPosition = { ...startPos };
+        this.currentPosition = { ...startPos };
+        
+        // Mark starting position on board (1 for first move)
+        this.board[startPos.row][startPos.col] = 1;
+        this.moveSequence.push({ row: startPos.row, col: startPos.col });
+        
+        return this.startPosition;
+    }
+
+    isValidMove(row, col) {
+        // Check if position is within board boundaries
+        if (row < 0 || row >= this.size || col < 0 || col >= this.size) {
+            return false;
+        }
+        
+        // Check if position is already visited
+        if (this.board[row][col] !== null) {
+            return false;
+        }
+        
+        // Check if it's a valid knight move
+        const currentRow = this.currentPosition.row;
+        const currentCol = this.currentPosition.col;
+        
+        const rowDiff = Math.abs(row - currentRow);
+        const colDiff = Math.abs(col - currentCol);
+        
+        return (rowDiff === 1 && colDiff === 2) || (rowDiff === 2 && colDiff === 1);
+    }
+
+    makeMove(row, col) {
+        if (!this.isGameActive) {
+            return false;
+        }
+        
+        if (!this.isValidMove(row, col)) {
+            return false;
+        }
+        
+        // Update board and current position
+        const moveNumber = this.moveSequence.length + 1;
+        this.board[row][col] = moveNumber;
+        this.currentPosition = { row, col };
+        this.moveSequence.push({ row, col });
+        
+        // Check if the tour is complete
+        if (moveNumber === this.size * this.size) {
+            this.isGameActive = false;
+            return true;
+        }
+        
+        // Check if the knight is trapped (no more valid moves)
+        if (this.getValidMoves().length === 0) {
+            this.isGameActive = false;
+            return true;
+        }
+        
+        return true;
+    }
+
+    getValidMoves() {
+        const moves = [];
+        const knightMoves = [
+            { rowDiff: -2, colDiff: -1 },
+            { rowDiff: -2, colDiff: 1 },
+            { rowDiff: -1, colDiff: -2 },
+            { rowDiff: -1, colDiff: 2 },
+            { rowDiff: 1, colDiff: -2 },
+            { rowDiff: 1, colDiff: 2 },
+            { rowDiff: 2, colDiff: -1 },
+            { rowDiff: 2, colDiff: 1 }
+        ];
+        
+        const { row, col } = this.currentPosition;
+        
+        for (const move of knightMoves) {
+            const newRow = row + move.rowDiff;
+            const newCol = col + move.colDiff;
+            
+            if (this.isValidMove(newRow, newCol)) {
+                moves.push({ row: newRow, col: newCol });
+            }
+        }
+        
+        return moves;
+    }
+
+    toAlgebraicNotation(row, col) {
+        const colLetter = String.fromCharCode(97 + col); // 'a' is ASCII 97
+        const rowNumber = this.size - row; // Invert row number (8 for top row in chess)
+        return `${colLetter}${rowNumber}`;
+    }
+
+    fromAlgebraicNotation(notation) {
+        if (!notation || notation.length !== 2) {
+            return null;
+        }
+        
+        const col = notation.charCodeAt(0) - 97; // 'a' is ASCII 97
+        const row = this.size - parseInt(notation[1], 10);
+        
+        if (row < 0 || row >= this.size || col < 0 || col >= this.size) {
+            return null;
+        }
+        
+        return { row, col };
+    }
+
+    reset() {
+        this.board = this.createEmptyBoard();
+        this.currentPosition = null;
+        this.startPosition = null;
+        this.moveSequence = [];
+        this.isGameActive = true;
+    }
+
+    getGameState() {
+        return {
+            board: this.board.map(row => [...row]),
+            currentPosition: { ...this.currentPosition },
+            startPosition: { ...this.startPosition },
+            moveCount: this.moveSequence.length,
+            movesHistory: [...this.moveSequence],
+            isGameActive: this.isGameActive,
+            validMoves: this.getValidMoves()
+        };
+    }
+    
+    async saveAlgorithmSolution(algorithm, solution, executionTime) {
+        // In client-side implementation, we don't save to DB
+        // This is a placeholder for compatibility with the server-side implementation
+        console.log(`Algorithm solution found in ${executionTime.toFixed(3)} seconds`);
+        return true;
+    }
+}
+
+// UI Component - Extended with our enhanced UI features
 class KnightsTourUI {
     constructor() {
         this.game = null;
-        
-        // DOM elements
         this.boardElement = null;
         this.statusElement = null;
-        this.messageElement = null;
         this.moveCountElement = null;
+        this.messageElement = null;
         this.algorithmSelectElement = null;
         this.solveButtonElement = null;
         this.resetButtonElement = null;
         this.randomButtonElement = null;
         this.speedControlElement = null;
+        this.metricsElement = null;
         
         // Board state
-        this.selectedAlgorithm = 'backtracking';
+        this.selectedAlgorithm = 'warnsdorff';
         this.isSolving = false;
         this.animationSpeed = 300; // Default animation speed in ms
         this.boardSize = 8; // Default board size
@@ -33,24 +205,18 @@ class KnightsTourUI {
         this.handleSpeedChange = this.handleSpeedChange.bind(this);
         this.handleBoardSizeChange = this.handleBoardSizeChange.bind(this);
     }
-
-    /**
-     * Initialize UI component
-     * @param {Object} gameInstance - Instance of the KnightsTour game
-     * @param {string} boardElementId - ID of the board container
-     * @param {string} controlsElementId - ID of the controls container
-     */
-    initialize(gameInstance, boardElementId = 'knights-tour-board', controlsElementId = 'knights-tour-controls') {
-        this.game = gameInstance;
-        this.boardSize = gameInstance.size;
+    
+    initialize(game, boardElementId = 'knights-tour-board', controlsElementId = 'knights-tour-controls') {
+        this.game = game;
+        this.boardSize = game.size;
         
-        // Initialize board container
+        // Get or create board element
         this.boardElement = document.getElementById(boardElementId);
         if (!this.boardElement) {
             throw new Error(`Board element with ID "${boardElementId}" not found`);
         }
         
-        // Initialize controls container
+        // Get or create controls element
         const controlsElement = document.getElementById(controlsElementId);
         if (!controlsElement) {
             throw new Error(`Controls element with ID "${controlsElementId}" not found`);
@@ -71,14 +237,26 @@ class KnightsTourUI {
         // Create action buttons
         this.createActionButtons(controlsElement);
         
+        // Add Font Awesome if not already loaded
+        this.loadFontAwesome();
+        
+        // Start a new game with a random starting position
+        this.handleRandomClick();
+        
         // Initial render
         this.render();
     }
+    
+    loadFontAwesome() {
+        if (!document.getElementById('font-awesome-css')) {
+            const link = document.createElement('link');
+            link.id = 'font-awesome-css';
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+            document.head.appendChild(link);
+        }
+    }
 
-    /**
-     * Create board size selector
-     * @param {HTMLElement} containerElement - Container for the board size selector
-     */
     createBoardSizeSelector(containerElement) {
         const sizeContainer = document.createElement('div');
         sizeContainer.className = 'control-group';
@@ -108,11 +286,7 @@ class KnightsTourUI {
         sizeContainer.appendChild(sizeSelect);
         containerElement.appendChild(sizeContainer);
     }
-
-    /**
-     * Create algorithm selector
-     * @param {HTMLElement} containerElement - Container for the algorithm selector
-     */
+    
     createAlgorithmSelector(containerElement) {
         const algorithmContainer = document.createElement('div');
         algorithmContainer.className = 'control-group';
@@ -143,11 +317,7 @@ class KnightsTourUI {
         algorithmContainer.appendChild(this.algorithmSelectElement);
         containerElement.appendChild(algorithmContainer);
     }
-
-    /**
-     * Create animation speed control
-     * @param {HTMLElement} containerElement - Container for the speed control
-     */
+    
     createSpeedControl(containerElement) {
         const speedContainer = document.createElement('div');
         speedContainer.className = 'control-group';
@@ -181,11 +351,7 @@ class KnightsTourUI {
         speedContainer.appendChild(speedValueDisplay);
         containerElement.appendChild(speedContainer);
     }
-
-    /**
-     * Create status elements
-     * @param {HTMLElement} containerElement - Container for status elements
-     */
+    
     createStatusElements(containerElement) {
         // Status container
         const statusContainer = document.createElement('div');
@@ -227,11 +393,7 @@ class KnightsTourUI {
         containerElement.appendChild(this.messageElement);
         containerElement.appendChild(this.metricsElement);
     }
-
-    /**
-     * Create action buttons
-     * @param {HTMLElement} containerElement - Container for action buttons
-     */
+    
     createActionButtons(containerElement) {
         const buttonsContainer = document.createElement('div');
         buttonsContainer.className = 'buttons-container mt-3';
@@ -259,12 +421,7 @@ class KnightsTourUI {
         buttonsContainer.appendChild(this.randomButtonElement);
         containerElement.appendChild(buttonsContainer);
     }
-
-    /**
-     * Handle cell click event
-     * @param {number} row - Row index
-     * @param {number} col - Column index
-     */
+    
     handleCellClick(row, col) {
         if (this.isSolving) return;
         
@@ -286,10 +443,7 @@ class KnightsTourUI {
             }
         }
     }
-
-    /**
-     * Handle solve button click event
-     */
+    
     async handleSolveClick() {
         if (this.isSolving) return;
         
@@ -302,17 +456,16 @@ class KnightsTourUI {
             // Get current position
             const startPosition = this.game.startPosition;
             
-            // Import the selected algorithm - fixed path
-            let algorithm;
+            // Solve with selected algorithm
+            const startTime = performance.now();
+            let solution;
+            
             if (this.selectedAlgorithm === 'backtracking') {
-                algorithm = require('./algorithms/backtracking');
+                solution = await this.solveWithBacktracking();
             } else {
-                algorithm = require('./algorithms/warnsdorff');
+                solution = await this.solveWithWarnsdorff();
             }
             
-            // Execute the algorithm
-            const startTime = performance.now();
-            const solution = algorithm.findKnightsTour(this.game);
             const endTime = performance.now();
             const executionTime = (endTime - startTime) / 1000;
             
@@ -334,12 +487,211 @@ class KnightsTourUI {
             this.solveButtonElement.disabled = false;
         }
     }
-
-    /**
-     * Animate the solution
-     * @param {Array} solution - Array of positions {row, col}
-     * @returns {Promise} Promise that resolves when animation is complete
-     */
+    
+    async solveWithBacktracking() {
+        // Pure backtracking implementation for Knight's Tour
+        const board = [];
+        const size = this.game.size;
+        
+        // Knight's move patterns (8 possible moves)
+        const moveX = [2, 1, -1, -2, -2, -1, 1, 2];
+        const moveY = [1, 2, 2, 1, -1, -2, -2, -1];
+        
+        const startPos = { ...this.game.startPosition };
+        const solution = [startPos];
+        
+        // Track progress for user feedback
+        let attemptsCount = 0;
+        const startTime = Date.now();
+        
+        // Initialize board with -1 (unvisited)
+        for (let i = 0; i < size; i++) {
+            board[i] = new Array(size).fill(-1);
+        }
+        
+        // Mark start position as visited (move 0)
+        board[startPos.row][startPos.col] = 0;
+        
+        // Set up progress reporting
+        let progressInterval = setInterval(() => {
+            this.setMessage(`Pure backtracking in progress... (${attemptsCount.toLocaleString()} attempts, ${((Date.now() - startTime) / 1000).toFixed(1)}s)`, 'message-info');
+        }, 300);
+        
+        try {
+            // Start the recursive backtracking process
+            const found = await this.backtrackingSolve(
+                board, startPos.row, startPos.col, 1, size, moveX, moveY, solution, 
+                () => { attemptsCount++; }
+            );
+            
+            // Clear the progress interval
+            clearInterval(progressInterval);
+            
+            // Report the result
+            if (found) {
+                this.setMessage(`Solution found using pure backtracking after ${attemptsCount.toLocaleString()} attempts in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds!`, 'message-success');
+                return solution;
+            } else {
+                this.setMessage(`Backtracking could not find a solution after ${attemptsCount.toLocaleString()} attempts.`, 'message-warning');
+                return null;
+            }
+        } catch (error) {
+            clearInterval(progressInterval);
+            console.error("Error in backtracking:", error);
+            this.setMessage(`Error during backtracking search: ${error.message}`, 'message-error');
+            return null;
+        }
+    }
+    
+    async backtrackingSolve(board, x, y, moveCount, size, moveX, moveY, solution, progressCallback) {
+        // Periodically yield to the browser to prevent freezing
+        // Less frequent yields for better performance
+        if (moveCount % 8 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+        
+        // Count this attempt
+        if (progressCallback) progressCallback();
+        
+        // Base case: all squares are visited
+        if (moveCount === size * size) {
+            return true; // Tour completed!
+        }
+        
+        // Try each possible knight move in order
+        for (let i = 0; i < 8; i++) {
+            const nextX = x + moveX[i];
+            const nextY = y + moveY[i];
+            
+            // Check if this is a valid move
+            if (this.isValidBacktrackingMove(nextX, nextY, board, size)) {
+                // Make the move
+                board[nextX][nextY] = moveCount;
+                solution.push({ row: nextX, col: nextY });
+                
+                // Recursively try to solve from this new position
+                if (await this.backtrackingSolve(board, nextX, nextY, moveCount + 1, size, moveX, moveY, solution, progressCallback)) {
+                    return true; // Solution found
+                }
+                
+                // Backtrack if no solution found from this position
+                board[nextX][nextY] = -1;
+                solution.pop();
+            }
+        }
+        
+        // No solution found from current position
+        return false;
+    }
+    
+    isValidBacktrackingMove(x, y, board, size) {
+        // A move is valid if:
+        // 1. It's within the board boundaries
+        // 2. The square has not been visited yet
+        return (
+            x >= 0 && y >= 0 && 
+            x < size && y < size && 
+            board[x][y] === -1
+        );
+    }
+    
+    async solveWithWarnsdorff() {
+        // Implementation of Warnsdorff's algorithm for client-side solver
+        const size = this.game.size;
+        const board = [];
+        const moveX = [2, 1, -1, -2, -2, -1, 1, 2];
+        const moveY = [1, 2, 2, 1, -1, -2, -2, -1];
+        const startPos = { ...this.game.startPosition };
+        const solution = [startPos];
+        
+        // Initialize board with zeros (unvisited)
+        for (let i = 0; i < size; i++) {
+            board[i] = new Array(size).fill(0);
+        }
+        
+        // Mark start position
+        board[startPos.row][startPos.col] = 1;
+        
+        // Current position
+        let currentRow = startPos.row;
+        let currentCol = startPos.col;
+        
+        // Warnsdorff's algorithm
+        for (let moveCount = 2; moveCount <= size * size; moveCount++) {
+            // For browser performance, break up long-running computation
+            if (moveCount % 20 === 0) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+            
+            // Find next move using Warnsdorff's heuristic
+            const nextMove = this.findNextWarnsdorffMove(currentRow, currentCol, board, size, moveX, moveY);
+            
+            // If stuck, return null
+            if (!nextMove) {
+                return null;
+            }
+            
+            // Make the move
+            currentRow = nextMove.x;
+            currentCol = nextMove.y;
+            board[currentRow][currentCol] = moveCount;
+            solution.push({ row: currentRow, col: currentCol });
+        }
+        
+        return solution;
+    }
+    
+    findNextWarnsdorffMove(x, y, board, size, moveX, moveY) {
+        let minDegree = Infinity;
+        let minDegreeX = -1;
+        let minDegreeY = -1;
+        
+        // Try all possible moves
+        for (let i = 0; i < 8; i++) {
+            const nextX = x + moveX[i];
+            const nextY = y + moveY[i];
+            
+            if (this.isValidWarnsdorffMove(nextX, nextY, board, size)) {
+                const degree = this.countAccessibleSquares(nextX, nextY, board, size, moveX, moveY);
+                
+                if (degree < minDegree) {
+                    minDegree = degree;
+                    minDegreeX = nextX;
+                    minDegreeY = nextY;
+                }
+            }
+        }
+        
+        if (minDegreeX !== -1 && minDegreeY !== -1) {
+            return { x: minDegreeX, y: minDegreeY };
+        }
+        
+        return null;
+    }
+    
+    countAccessibleSquares(x, y, board, size, moveX, moveY) {
+        let count = 0;
+        
+        for (let i = 0; i < 8; i++) {
+            const nextX = x + moveX[i];
+            const nextY = y + moveY[i];
+            
+            if (this.isValidWarnsdorffMove(nextX, nextY, board, size)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+    
+    isValidWarnsdorffMove(x, y, board, size) {
+        return (
+            x >= 0 && y >= 0 && 
+            x < size && y < size && 
+            board[x][y] === 0
+        );
+    }
+    
     animateSolution(solution) {
         return new Promise(resolve => {
             let i = 0;
@@ -368,13 +720,7 @@ class KnightsTourUI {
             setTimeout(animateStep, this.animationSpeed);
         });
     }
-
-    /**
-     * Show performance metrics
-     * @param {string} algorithm - Algorithm name
-     * @param {number} steps - Number of steps
-     * @param {number} time - Execution time in seconds
-     */
+    
     showPerformanceMetrics(algorithm, steps, time) {
         this.metricsElement.style.display = 'block';
         this.metricsElement.innerHTML = `
@@ -393,112 +739,87 @@ class KnightsTourUI {
             </div>
         `;
     }
-
-    /**
-     * Handle reset button click event
-     */
-    async handleResetClick() {
+    
+    handleResetClick() {
+        if (this.isSolving) return;
+        
+        // Store the current position before reset if available, otherwise use random
+        let startPos = null;
+        if (this.game.startPosition) {
+            startPos = { ...this.game.startPosition };
+        }
+        
+        this.game.reset();
+        
+        // Initialize with the stored position or a new random position
+        this.game.initializeGame(startPos);
+        
+        this.enableBoard();
+        this.clearMessage();
+        this.metricsElement.style.display = 'none';
+        this.render();
+        
+        this.setMessage('Game reset successfully.', 'message-info');
+    }
+    
+    handleRandomClick() {
         if (this.isSolving) return;
         
         this.game.reset();
-        await this.game.initializeGame();
+        this.game.initializeGame();
         
         this.enableBoard();
         this.clearMessage();
         this.metricsElement.style.display = 'none';
         this.render();
     }
-
-    /**
-     * Handle random start button click event
-     */
-    async handleRandomClick() {
-        if (this.isSolving) return;
-        
-        this.game.reset();
-        await this.game.initializeGame();
-        
-        this.enableBoard();
-        this.clearMessage();
-        this.metricsElement.style.display = 'none';
-        this.render();
-    }
-
-    /**
-     * Handle algorithm change event
-     * @param {Event} event - Change event
-     */
+    
     handleAlgorithmChange(event) {
         this.selectedAlgorithm = event.target.value;
     }
-
-    /**
-     * Handle animation speed change
-     * @param {Event} event - Change event
-     */
+    
     handleSpeedChange(event) {
         this.animationSpeed = parseInt(event.target.value, 10);
     }
-
-    /**
-     * Handle board size change
-     * @param {Event} event - Change event
-     */
+    
     async handleBoardSizeChange(event) {
         if (this.isSolving) return;
         
         const newSize = parseInt(event.target.value, 10);
         
         // Create new game with new size
-        this.game = new (this.game.constructor)(newSize);
+        this.game = new KnightsTour(newSize);
         this.boardSize = newSize;
         
         // Initialize the new game
-        await this.game.initializeGame();
+        this.game.initializeGame();
         
         this.enableBoard();
         this.clearMessage();
         this.metricsElement.style.display = 'none';
         this.render();
     }
-
-    /**
-     * Set message text and style
-     * @param {string} message - Message text
-     * @param {string} className - CSS class for styling
-     */
+    
     setMessage(message, className = 'message-info') {
         this.messageElement.textContent = message;
         this.messageElement.className = `message-area ${className}`;
     }
-
-    /**
-     * Clear message
-     */
+    
     clearMessage() {
         this.messageElement.textContent = '';
         this.messageElement.className = 'message-area';
     }
-
-    /**
-     * Disable board interaction
-     */
+    
     disableBoard() {
         this.boardElement.classList.add('disabled');
         this.solveButtonElement.disabled = true;
     }
-
-    /**
-     * Enable board interaction
-     */
+    
     enableBoard() {
         this.boardElement.classList.remove('disabled');
         this.solveButtonElement.disabled = false;
     }
-
-    /**
-     * Render the chess board
-     */
+    
     render() {
         // Clear board
         this.boardElement.innerHTML = '';
@@ -584,3 +905,13 @@ class KnightsTourUI {
         }
     }
 }
+
+// Initialize game when DOM content is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Create game instance and UI controller
+    const game = new KnightsTour(8);
+    const ui = new KnightsTourUI();
+    
+    // Initialize UI with game
+    ui.initialize(game);
+});

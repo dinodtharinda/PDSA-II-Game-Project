@@ -10,8 +10,8 @@ const validator = require('../../utils/validator');
 
 class TicTacToe {
     constructor() {
-        // Initialize 3x3 board instead of 5x5
-        this.board = Array(3).fill().map(() => Array(3).fill(null));
+        // Initialize 5x5 board
+        this.board = Array(5).fill().map(() => Array(5).fill(null));
         this.currentPlayer = 'X'; // Player is X, Computer is O
         this.winner = null;
         this.moveCount = 0;
@@ -22,8 +22,8 @@ class TicTacToe {
 
     /**
      * Make a move on the board
-     * @param {number} row - Row index (0-2)
-     * @param {number} col - Column index (0-2)
+     * @param {number} row - Row index (0-4)
+     * @param {number} col - Column index (0-4)
      * @returns {boolean} Whether the move was successful
      */
     makeMove(row, col) {
