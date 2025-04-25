@@ -6,13 +6,94 @@ This document outlines the development plan, milestones, and task distribution f
 
 ### 1. Tic-Tac-Toe
 
+#### Completed Features
+- 5×5 game board with responsive design
+- Human vs Computer gameplay
+- Win detection for 4-in-a-row horizontally, vertically, and diagonally
+- Two AI algorithms:
+  - Minimax with alpha-beta pruning (adaptive depth based on board state)
+  - Monte Carlo Tree Search with UCT selection
+- Performance measurement and algorithm comparison
+- Mobile-friendly UI with touch support
+- Visual feedback for current player and AI thinking states
+
+#### Technical Details
+- Board representation: 5×5 null/X/O array
+- Move validation: boundary and occupancy checks
+- Win condition: count consecutive symbols in 8 directions
+- AI move timing: performance measured in milliseconds
+- UI optimizations: debounced rendering, hardware acceleration
+- Error handling: input validation and graceful degradation
+
 ### 2. Traveling Salesman Problem
 
 ### 3. Tower of Hanoi
 
+#### Completed Implementation
+- Interactive disk and tower visualization with drag-and-drop support
+- Support for both 3 and 4 pegs with variable disk count (5-10)
+- Three algorithmic approaches implemented and compared:
+  - Recursive solution for 3 pegs (optimal)
+  - Iterative solution for 3 pegs
+  - Frame-Stewart algorithm for 4 pegs
+- Performance measurement and algorithm comparison
+- Complete database integration for game sessions and metrics
+- Mobile-friendly UI with touch support
+- Comprehensive unit tests
+
+#### Technical Details
+- Disk representation: Array-based stack for each peg
+- Move validation: Size ordering constraints
+- Animation system: CSS transitions for smooth disk movement
+- Performance tracking: Move count and execution time comparison
+- Error handling: Complete move validation and state management
+- Database integration: Game sessions, moves, and algorithm metrics stored
+
+#### Features
+- Random disk count generation (5-10)
+- Interactive disk movement with click/touch support
+- Real-time move validation
+- Algorithm visualization
+- Performance comparison between approaches
+- Solution replay functionality
+- Progress tracking and optimal move count display
+- Support for both 3-peg and 4-peg variants
+
 ### 4. Eight Queens Puzzle
 
 ### 5. Knight's Tour Problem
+
+#### Completed Implementation
+- Interactive chessboard visualization with coordinate labeling and move indicators
+- Support for variable board sizes (5x5, 6x6, 7x7, 8x8)
+- Two algorithmic approaches fully implemented and compared:
+  - Backtracking algorithm with progress reporting
+  - Warnsdorff's heuristic algorithm for optimized solution
+- Performance measurement with detailed metrics display
+- Client-side implementation with placeholders for database integration
+- Complete move validation and visualization
+- Configurable animation speed for solution playback
+- Random start position with reset to same position functionality
+- UI components for algorithm selection and board size control
+
+#### Technical Details
+- Board representation: 2D array with null/number values
+- Knight move validation: L-shape movement constraints and boundary checks
+- Solution visualization: Animated replay of discovered knight's tour 
+- Performance tracking: Move count and execution time comparison
+- Tour completion detection: Full board visitation check
+- Move handling: Click-based interface with valid move highlighting
+- Algebraic notation: Chess-standard notation (e.g., "e4") for position tracking
+
+#### Features
+- Random starting position or manual position selection
+- Interactive knight movement with valid move highlighting
+- Real-time move validation and game state tracking
+- Algorithm visualization with step-by-step replay
+- Performance comparison between backtracking and Warnsdorff's approaches
+- Solution playback with adjustable animation speed
+- Complete UI controls for game settings
+- Support for different board sizes with automatic scaling
 
 ## Common Components
 
