@@ -27,6 +27,30 @@ This document outlines the development plan, milestones, and task distribution f
 
 ### 2. Traveling Salesman Problem
 
+#### Completed Features
+- Random distance matrix generation (50-100 km between cities A-J)
+- Random home city selection for each game round
+- Interactive city selection UI with visual feedback
+- Three algorithmic approaches implemented and compared:
+  - Nearest Neighbor algorithm (greedy approach)
+  - Dynamic Programming solution (exact optimal solution)
+  - Genetic Algorithm implementation (population-based approximation)
+- Performance comparison between algorithms with detailed metrics
+- City visualization with route display
+- Mobile-friendly UI with touch support
+
+#### Technical Details
+- Distance representation: 10×10 matrix (cities A-J)
+- Random generation: Distances between 50-100 km, symmetric matrix
+- Path validation: Complete circuit validation including home city return
+- Algorithms:
+  - Nearest Neighbor: O(n²) greedy approach
+  - Dynamic Programming: O(n²2ⁿ) Held-Karp algorithm
+  - Genetic Algorithm: Population-based with crossover and mutation
+- Performance tracking: Execution time and solution quality comparison
+- UI: SVG-based city map with path animation
+- Error handling: Input validation with user feedback
+
 ### 3. Tower of Hanoi
 
 #### Completed Implementation
@@ -60,6 +84,26 @@ This document outlines the development plan, milestones, and task distribution f
 - Support for both 3-peg and 4-peg variants
 
 ### 4. Eight Queens Puzzle
+
+#### Completed Implementation
+- Interactive chessboard visualization with queen placement functionality
+- Solution verification with threat detection and visual feedback
+- Two algorithmic approaches implemented and compared:
+  - Sequential solution finder (single-threaded)
+  - Multi-threaded solution with configurable thread count
+- Performance comparison between sequential and threaded approaches
+- Solution tracking with storage and display of all valid configurations
+- Complete game session management
+- Mobile-friendly UI with touch support
+
+#### Technical Details
+- Board representation: 8×8 boolean array for queen placement
+- Solution verification: Row, column, and diagonal checking
+- Threading model: Task-based parallelism with shared result collection
+- Performance tracking: Execution time and thread utilization metrics
+- UI components: Drag-and-drop queen placement with validation
+- Animation system: CSS transitions for queen placement and removal
+- Error handling: Complete state validation with user feedback
 
 ### 5. Knight's Tour Problem
 
