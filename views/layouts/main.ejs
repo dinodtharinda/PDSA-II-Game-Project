@@ -30,5 +30,14 @@
       <script src="<%= script %>"></script>
     <% }); %>
   <% } %>
+  <% if (path === '/tic-tac-toe') { %>
+    <script src="/js/ticTacToeBundle.js"></script>
+  <% } %>
+  <% if (path === '/tower-of-hanoi') { %>
+    <script src="/js/towerOfHanoi.js"></script>
+  <% } %>
+  <% if (path === '/eight-queens') { %>
+    <script src="/js/eightQueensBundle.js"></script>
+  <% } %>
 </body>
 </html>

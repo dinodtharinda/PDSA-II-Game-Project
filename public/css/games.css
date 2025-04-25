@@ -888,3 +888,135 @@ input[type="range"].form-range::-moz-range-thumb {
         font-size: 1.5rem;
     }
 }
+
+/* Eight Queens Styles */
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.game-board {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    padding: 8px;
+    background-color: #634832;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+}
+
+.chessboard .cell {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    background-color: #f0d9b5;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.chessboard .cell.dark {
+    background-color: #b58863;
+}
+
+.chessboard .cell.queen::before {
+    content: '♕';
+    font-size: min(8vw, 3rem);
+    line-height: 1;
+    color: #000;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chessboard .cell.attacked {
+    position: relative;
+}
+
+.chessboard .cell.attacked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* Handle hover states differently for touch and non-touch devices */
+@media (hover: hover) {
+    .chessboard .cell:hover:not(.queen) {
+        transform: scale(0.95);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .chessboard .cell:active:not(.queen) {
+        transform: scale(0.95);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 10px;
+    }
+
+    .game-board {
+        padding: 10px;
+    }
+
+    .chessboard {
+        padding: 4px;
+        gap: 1px;
+    }
+
+    .chessboard .cell.queen::before {
+        font-size: min(7vw, 2.5rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .game-board {
+        padding: 5px;
+    }
+
+    .chessboard {
+        padding: 2px;
+        gap: 1px;
+    }
+
+    .chessboard .cell.queen::before {
+        font-size: min(6vw, 2rem);
+    }
+}
+
+/* Game controls styles */
+.game-controls {
+    text-align: center;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+/* Game status styles */
+.game-status {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 1.1rem;
+}
