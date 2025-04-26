@@ -5,9 +5,11 @@
 
 import Timer from '../../utils/timer.js';
 import logger from '../../utils/logger.js';
+import { getSequelize } from '../../config/db.js';
+import { trackAlgorithmPerformance } from '../../utils/performanceTracker.js';
 
 class TSPGame {
-    constructor() {
+    constructor(playerId = null) {
         this.cities = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
         this.cityCount = this.cities.length;
         this.distanceMatrix = this.generateDistanceMatrix();
@@ -17,6 +19,45 @@ class TSPGame {
         this.optimalRoute = null;
         this.optimalDistance = Infinity;
         this.timer = new Timer();
+        this.gameId = null;
+        this.playerId = playerId;
+        
+        // Create database record if player ID is provided
+        if (this.playerId) {
+            this.createGameRecord();
+        }
+    }
+
+    /**
+     * Create a game record in the database
+     * @returns {Promise<void>}
+     */
+    async createGameRecord() {
+        try {
+            const db = await getSequelize();
+            // Create a new game record
+            const [results] = await db.query(`
+                INSERT INTO games 
+                (game_type, player_id, settings, status, start_time) 
+                VALUES 
+                (?, ?, ?, 'in_progress', NOW())
+            `, {
+                replacements: [
+                    'travelingSalesman', 
+                    this.playerId,
+                    JSON.stringify({
+                        cityCount: this.cityCount,
+                        homeCity: this.homeCity
+                    })
+                ],
+                type: db.QueryTypes.INSERT
+            });
+            
+            this.gameId = results;
+            logger.info(`Created new Traveling Salesman game with ID: ${this.gameId}`);
+        } catch (error) {
+            logger.error(`Error creating Traveling Salesman game record: ${error.message}`);
+        }
     }
 
     /**
@@ -180,14 +221,17 @@ class TSPGame {
      * Run a specific algorithm on the TSP instance
      * @param {string} algorithmName - The name of the algorithm to run
      * @param {Function} algorithmFunction - The algorithm function
-     * @returns {Object} The algorithm results
+     * @returns {Promise<Object>} The algorithm results
      */
-    runAlgorithm(algorithmName, algorithmFunction) {
+    async runAlgorithm(algorithmName, algorithmFunction) {
         logger.info(`Running ${algorithmName} algorithm for TSP`);
         
         this.timer.start();
-        const route = algorithmFunction(this.distanceMatrix, this.homeCity);
+        const routeIndices = algorithmFunction(this.distanceMatrix, this.homeCity);
         const executionTime = this.timer.stop();
+        
+        // Convert route indices to city names if needed
+        const route = Array.isArray(routeIndices) ? routeIndices : [];
         
         const distance = this.calculateRouteDistance(route);
         
@@ -204,6 +248,21 @@ class TSPGame {
         if (distance < this.optimalDistance) {
             this.optimalDistance = distance;
             this.optimalRoute = [...route];
+        }
+        
+        // Try to import and use algorithm-specific savePerformanceMetrics function
+        try {
+            const { savePerformanceMetrics } = await import(`./algorithms/${algorithmName.replace(/\s+/g, '')}.js`);
+            if (savePerformanceMetrics && typeof savePerformanceMetrics === 'function') {
+                await savePerformanceMetrics(this, algorithmName, result);
+            } else {
+                // Fallback to generic performance tracking
+                await this.saveAlgorithmPerformance(algorithmName, result);
+            }
+        } catch (error) {
+            logger.warn(`Could not import savePerformanceMetrics from algorithm module: ${error.message}`);
+            // Fallback to generic performance tracking
+            await this.saveAlgorithmPerformance(algorithmName, result);
         }
         
         logger.info(`${algorithmName} algorithm completed. Distance: ${distance} km, Time: ${executionTime} ms`);
@@ -252,6 +311,9 @@ class TSPGame {
                 this.optimalRoute = [...result.route];
             }
             
+            // Save algorithm performance to database
+            await this.saveAlgorithmPerformance(algorithm, result);
+            
             logger.info(`${algorithm} algorithm completed via API. Distance: ${result.distance} km, Time: ${result.executionTime} ms`);
             
             return result;
@@ -299,6 +361,132 @@ class TSPGame {
         });
         
         return matrix;
+    }
+
+    /**
+     * Save game results to database
+     * @param {boolean} isComplete - Whether the tour is complete
+     * @returns {Promise<number|null>} Game ID if successful, null otherwise
+     */
+    async saveGameResults(isComplete = false) {
+        if (!this.gameId) {
+            // Create a game record if none exists yet
+            await this.createGameRecord();
+            if (!this.gameId) return null;
+        }
+
+        try {
+            const db = await getSequelize();
+            const routeDistance = this.calculateRouteDistance(this.selectedRoute);
+            const isOptimal = routeDistance === this.optimalDistance;
+            
+            // Update the games table
+            await db.query(`
+                UPDATE games 
+                SET result = ?, 
+                    end_time = NOW(), 
+                    status = 'completed',
+                    solution_found = ?
+                WHERE id = ?
+            `, {
+                replacements: [
+                    isOptimal ? 'optimal' : 'completed',
+                    isComplete,
+                    this.gameId
+                ],
+                type: db.QueryTypes.UPDATE
+            });
+            
+            // Create traveling_salesman specific record
+            await db.query(`
+                INSERT INTO traveling_salesman 
+                (game_id, home_city, selected_cities, shortest_route, algorithm_type, execution_time) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, {
+                replacements: [
+                    this.gameId,
+                    this.homeCity,
+                    JSON.stringify(this.selectedRoute),
+                    JSON.stringify(this.optimalRoute || []),
+                    'player', // Algorithm type is 'player' for human solutions
+                    0 // Player execution time is not measured
+                ],
+                type: db.QueryTypes.INSERT
+            });
+            
+            // Track performance metrics
+            await trackAlgorithmPerformance({
+                gameId: this.gameId,
+                algorithmName: 'player',
+                executionTime: 0, // Player execution time is not measured
+                solutionFound: isComplete,
+                iterations: this.selectedRoute.length,
+                parameters: {
+                    cityCount: this.cityCount,
+                    homeCity: this.homeCity,
+                    distance: routeDistance
+                }
+            });
+            
+            logger.info(`TSP game results saved to database with ID: ${this.gameId}`);
+            return this.gameId;
+        } catch (error) {
+            logger.error(`Error saving TSP game results: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Save algorithm performance metrics to database
+     * @param {string} algorithmName - The name of the algorithm
+     * @param {Object} result - The algorithm result
+     * @returns {Promise<void>}
+     */
+    async saveAlgorithmPerformance(algorithmName, result) {
+        if (!this.gameId) {
+            // Create a game record if none exists yet
+            await this.createGameRecord();
+            if (!this.gameId) return;
+        }
+        
+        try {
+            const db = await getSequelize();
+            
+            // Create traveling_salesman specific record for algorithm
+            await db.query(`
+                INSERT INTO traveling_salesman 
+                (game_id, home_city, selected_cities, shortest_route, algorithm_type, execution_time) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, {
+                replacements: [
+                    this.gameId,
+                    this.homeCity,
+                    '[]', // No selected cities for algorithm run
+                    JSON.stringify(result.route),
+                    algorithmName,
+                    result.executionTime / 1000 // Convert to seconds
+                ],
+                type: db.QueryTypes.INSERT
+            });
+            
+            // Track algorithm performance
+            await trackAlgorithmPerformance({
+                gameId: this.gameId,
+                algorithmName: algorithmName,
+                executionTime: result.executionTime / 1000,
+                solutionFound: true,
+                iterations: result.route.length,
+                parameters: {
+                    cityCount: this.cityCount,
+                    homeCity: this.homeCity,
+                    distance: result.distance
+                }
+            });
+            
+            logger.info(`TSP ${algorithmName} algorithm performance saved. Execution time: ${result.executionTime}ms, Distance: ${result.distance}km`);
+        } catch (error) {
+            logger.error(`Error saving algorithm performance: ${error.message}`);
+        }
     }
 }
 

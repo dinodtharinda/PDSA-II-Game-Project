@@ -173,12 +173,25 @@
 
 <!-- Initialize game using ES modules -->
 <script type="module">
-    import { TravelingSalesmanUI } from '/src/games/tsp/ui/index.js';
-    import { TravelingSalesman } from '/src/games/tsp/game.js';
+    import TSPUI from '/src/games/tsp/ui/index.js';
     
     document.addEventListener('DOMContentLoaded', async () => {
-        const game = new TravelingSalesman();
-        const ui = new TravelingSalesmanUI();
-        await ui.initialize(game, 'tsp-canvas');
+        // Get player ID from session or localStorage if available
+        const playerId = localStorage.getItem('playerId') || 
+                         sessionStorage.getItem('playerId') || 
+                         '<%= locals.playerId || "" %>';
+                         
+        // Create UI with player ID
+        const ui = new TSPUI(playerId || null);
+        ui.init();
+        
+        // Create metrics container for tracking performance
+        const controlsColumn = document.querySelector('.col-md-3');
+        if (controlsColumn) {
+            const metricsContainer = document.createElement('div');
+            metricsContainer.id = 'metrics-container';
+            metricsContainer.className = 'mt-4';
+            controlsColumn.appendChild(metricsContainer);
+        }
     });
 </script>

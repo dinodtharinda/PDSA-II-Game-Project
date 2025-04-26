@@ -1,3 +1,6 @@
+import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
+
 /**
  * Dynamic Programming Algorithm for Traveling Salesman Problem (Held-Karp algorithm)
  * 
@@ -172,4 +175,36 @@ function getPermutations(arr) {
     return result;
 }
 
+/**
+ * Save performance metrics to database
+ * @param {Object} game - Game instance
+ * @param {string} algorithm - Algorithm name
+ * @param {Object} result - Algorithm result
+ * @returns {Promise<void>}
+ */
+async function savePerformanceMetrics(game, algorithm, result) {
+    if (!game.gameId) return;
+    
+    try {
+        await trackAlgorithmPerformance({
+            gameId: game.gameId,
+            algorithmName: algorithm,
+            executionTime: result.executionTime / 1000, // Convert to seconds
+            solutionFound: true,
+            iterations: result.route.length,
+            parameters: {
+                cityCount: game.cityCount,
+                homeCity: game.homeCity,
+                distance: result.distance,
+                algorithm: 'held-karp'
+            }
+        });
+        
+        logger.info(`Performance metrics saved for ${algorithm} algorithm`);
+    } catch (error) {
+        logger.error(`Failed to save performance metrics: ${error.message}`);
+    }
+}
+
 export default dynamicProgramming;
+export { savePerformanceMetrics };

@@ -1,3 +1,6 @@
+import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
+
 /**
  * Nearest Neighbor Algorithm for Traveling Salesman Problem
  * 
@@ -10,11 +13,15 @@
  * Space Complexity: O(n)
  * 
  * @param {Array<Array<number>>} distanceMatrix - Matrix of distances between cities
- * @param {Array<string>} cities - Array of city names
- * @param {number} startIndex - Index of the home city
- * @returns {Object} Object containing the route and total distance
+ * @param {string} homeCity - Home city name
+ * @returns {Array<string>} Optimal route starting and ending at the home city
  */
-function nearestNeighbor(distanceMatrix, cities, startIndex) {
+function nearestNeighbor(distanceMatrix, homeCity) {
+    // Convert homeCity from name to index if needed
+    const startIndex = typeof homeCity === 'string' 
+        ? Array.from('ABCDEFGHIJ').indexOf(homeCity)
+        : homeCity;
+        
     const n = distanceMatrix.length;
     const visited = new Array(n).fill(false);
     const route = [startIndex];
@@ -47,11 +54,44 @@ function nearestNeighbor(distanceMatrix, cities, startIndex) {
 
     // Return to start
     totalDistance += distanceMatrix[currentCity][startIndex];
+    route.push(startIndex); // Complete the circuit
     
-    return {
-        route: route,
-        distance: totalDistance
-    };
+    // Convert indices back to city names
+    const cityNames = Array.from('ABCDEFGHIJ').slice(0, n);
+    const namedRoute = route.map(index => cityNames[index]);
+    
+    return namedRoute;
+}
+
+/**
+ * Save performance metrics to database
+ * @param {Object} game - Game instance
+ * @param {string} algorithm - Algorithm name
+ * @param {Object} result - Algorithm result
+ * @returns {Promise<void>}
+ */
+async function savePerformanceMetrics(game, algorithm, result) {
+    if (!game.gameId) return;
+    
+    try {
+        await trackAlgorithmPerformance({
+            gameId: game.gameId,
+            algorithmName: algorithm,
+            executionTime: result.executionTime / 1000, // Convert to seconds
+            solutionFound: true,
+            iterations: result.route.length,
+            parameters: {
+                cityCount: game.cityCount,
+                homeCity: game.homeCity,
+                distance: result.distance
+            }
+        });
+        
+        logger.info(`Performance metrics saved for ${algorithm} algorithm`);
+    } catch (error) {
+        logger.error(`Failed to save performance metrics: ${error.message}`);
+    }
 }
 
 export default nearestNeighbor;
+export { savePerformanceMetrics };

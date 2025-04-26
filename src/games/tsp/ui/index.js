@@ -4,16 +4,19 @@
  */
 
 import TSPGame from '../game.js';
+import logger from '../../../utils/logger.js';
 
 class TSPUI {
-    constructor() {
-        this.game = new TSPGame();
+    constructor(playerId = null) {
+        this.playerId = playerId;
+        this.game = new TSPGame(playerId);
         this.cityElements = {};
         this.routeLines = [];
         this.canvas = null;
         this.ctx = null;
         this.cityPositions = {};
         this.initialized = false;
+        this.metricsElement = null;
     }
 
     /**
@@ -282,6 +285,13 @@ class TSPUI {
                 this.updateCityInfo();
                 this.drawCities();
                 this.drawRoute();
+                
+                // Check if tour is complete after adding city
+                const isCompleteTour = this.game.isCompleteTour();
+                if (isCompleteTour) {
+                    this.showMessage('Tour completed! Saving to database...', 'success');
+                    this.savePlayerRoute(true);
+                }
             }
         } catch (error) {
             this.showMessage(error.message, 'error');
@@ -398,7 +408,7 @@ class TSPUI {
                 
                 this.showMessage('Genetic Algorithm completed!', 'success');
             } catch (error) {
-                this.showMessage('Error running Genetic Algorithm: ' + error.message, 'error');
+                this.showMessage('Error running Genetic Algorithm algorithm: ' + error.message, 'error');
             }
         }, 100);
     }
@@ -572,6 +582,80 @@ class TSPUI {
         // Draw the optimal route
         this.drawCities();
         this.drawAlgorithmRoute(results[optimalAlgorithm].route, '#28a745');
+    }
+
+    /**
+     * Save player's completed route to database
+     * @param {boolean} isComplete - Whether the tour is complete
+     */
+    async savePlayerRoute(isComplete = false) {
+        try {
+            const gameId = await this.game.saveGameResults(isComplete);
+            if (gameId) {
+                this.showPerformanceMetrics('player', 0, gameId, isComplete);
+                logger.info(`Saved player route to database with ID: ${gameId}`);
+            }
+        } catch (error) {
+            logger.error(`Error saving player route: ${error.message}`);
+            this.showMessage('Error saving route to database', 'error');
+        }
+    }
+
+    /**
+     * Show performance metrics
+     * @param {string} algorithm - Algorithm name
+     * @param {number} executionTime - Execution time in milliseconds
+     * @param {number} gameId - Game ID in database
+     * @param {boolean} isComplete - Whether the tour is complete
+     */
+    showPerformanceMetrics(algorithm, executionTime, gameId, isComplete = false) {
+        const metricsContainer = document.getElementById('metrics-container');
+        if (!metricsContainer) return;
+        
+        // Create metrics element if it doesn't exist
+        if (!this.metricsElement) {
+            this.metricsElement = document.createElement('div');
+            this.metricsElement.className = 'metrics-panel card mt-3';
+            metricsContainer.appendChild(this.metricsElement);
+        }
+        
+        const distance = algorithm === 'player' 
+            ? this.game.calculateRouteDistance(this.game.selectedRoute)
+            : '';
+            
+        const algorithmDisplay = algorithm === 'player' ? 'Your Route' : algorithm;
+        
+        this.metricsElement.innerHTML = `
+            <div class="card-header bg-info text-white">
+                <h5 class="m-0">Performance Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="metric-item">
+                    <span class="metric-label">Algorithm:</span>
+                    <span>${algorithmDisplay}</span>
+                </div>
+                ${distance ? `
+                <div class="metric-item">
+                    <span class="metric-label">Distance:</span>
+                    <span>${distance} km</span>
+                </div>` : ''}
+                ${executionTime ? `
+                <div class="metric-item">
+                    <span class="metric-label">Execution Time:</span>
+                    <span>${executionTime} ms</span>
+                </div>` : ''}
+                ${isComplete ? `
+                <div class="metric-item">
+                    <span class="metric-label">Tour Status:</span>
+                    <span class="text-success">Complete</span>
+                </div>` : ''}
+                ${gameId ? `
+                <div class="metric-item">
+                    <span class="metric-label">Database ID:</span>
+                    <span>${gameId}</span>
+                </div>` : ''}
+            </div>
+        `;
     }
 }
 

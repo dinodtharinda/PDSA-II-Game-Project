@@ -1,3 +1,6 @@
+import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
+
 /**
  * Genetic Algorithm for Traveling Salesman Problem
  * 
@@ -284,4 +287,38 @@ function getSortedIndices(fitnessScores) {
         .sort((a, b) => fitnessScores[a] - fitnessScores[b]);
 }
 
+/**
+ * Save performance metrics to database
+ * @param {Object} game - Game instance
+ * @param {string} algorithm - Algorithm name
+ * @param {Object} result - Algorithm result
+ * @returns {Promise<void>}
+ */
+async function savePerformanceMetrics(game, algorithm, result) {
+    if (!game.gameId) return;
+    
+    try {
+        await trackAlgorithmPerformance({
+            gameId: game.gameId,
+            algorithmName: algorithm,
+            executionTime: result.executionTime / 1000, // Convert to seconds
+            solutionFound: true,
+            iterations: result.generations || 100, // Number of generations
+            parameters: {
+                cityCount: game.cityCount,
+                homeCity: game.homeCity,
+                distance: result.distance,
+                populationSize: result.populationSize || 50,
+                generations: result.generations || 100,
+                mutationRate: result.mutationRate || 0.01
+            }
+        });
+        
+        logger.info(`Performance metrics saved for ${algorithm} algorithm`);
+    } catch (error) {
+        logger.error(`Failed to save performance metrics: ${error.message}`);
+    }
+}
+
 export default geneticAlgorithm;
+export { savePerformanceMetrics };
