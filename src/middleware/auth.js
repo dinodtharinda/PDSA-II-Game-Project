@@ -1,34 +1,35 @@
-const logger = require('../utils/logger');
+import logger from '../utils/logger.js';
+import Player from '../models/player.js';
 
 /**
- * Authentication middleware for protecting routes
- * @param {Request} req - Express request object
- * @param {Response} res - Express response object
- * @param {Function} next - Express next function
+ * Authentication middleware
  */
-const authenticate = (req, res, next) => {
-  // For this game project, we'll use a simple session-based auth
-  // In a production app, you would implement JWT or other auth strategies
-  
-  if (req.session && req.session.userId) {
-    // User is authenticated
-    logger.info(`Authenticated request from user ${req.session.userId}`);
-    return next();
-  }
-  
-  // For API requests, send a 401 Unauthorized response
-  if (req.xhr || req.headers.accept.indexOf('json') > -1) {
-    logger.warn('Unauthenticated API request');
-    return res.status(401).json({
-      error: {
-        message: 'Authentication required'
-      }
-    });
-  }
-  
-  // For page requests, redirect to the login page
-  logger.warn('Unauthenticated page request, redirecting to login');
-  res.redirect('/login');
-};
+async function authenticate(req, res, next) {
+  try {
+    // Check for session
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
-module.exports = authenticate;
+    // Get user from database
+    const user = await Player.findByPk(req.session.userId);
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Invalid session' });
+    }
+
+    // Check if user is verified
+    if (!user.verified) {
+      return res.status(403).json({ error: 'Please verify your email' });
+    }
+
+    // Attach user to request object
+    req.user = user;
+    next();
+  } catch (err) {
+    logger.error(`Authentication error: ${err.message}`);
+    next(err);
+  }
+}
+
+export default authenticate;

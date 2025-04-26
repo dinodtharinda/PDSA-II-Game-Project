@@ -284,4 +284,4 @@ function getSortedIndices(fitnessScores) {
         .sort((a, b) => fitnessScores[a] - fitnessScores[b]);
 }
 
-module.exports = geneticAlgorithm;
+export default geneticAlgorithm;

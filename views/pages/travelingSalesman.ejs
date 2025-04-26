@@ -169,5 +169,16 @@
     }
 </style>
 
-<!-- JavaScript to initialize the TSP UI -->
-<script src="/js/travellingSalesman.js"></script>
+<%- contentFor('body') %>
+
+<!-- Initialize game using ES modules -->
+<script type="module">
+    import { TravelingSalesmanUI } from '/src/games/tsp/ui/index.js';
+    import { TravelingSalesman } from '/src/games/tsp/game.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        const game = new TravelingSalesman();
+        const ui = new TravelingSalesmanUI();
+        await ui.initialize(game, 'tsp-canvas');
+    });
+</script>

@@ -217,4 +217,4 @@ class Minimax {
     }
 }
 
-module.exports = Minimax;
+export default Minimax;

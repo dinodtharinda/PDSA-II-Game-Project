@@ -6,15 +6,15 @@
  * It's based on the Frame-Stewart approach, which is conjectured to be optimal for 4+ pegs.
  */
 
-const timer = require('../../../utils/timer');
-const logger = require('../../../utils/logger');
+import Timer from '../../../utils/timer.js';
+import logger from '../../../utils/logger.js';
 
 /**
  * Solve the Tower of Hanoi puzzle using the Frame-Stewart algorithm for 4 pegs
  * @param {number} diskCount - Number of disks
  * @returns {Array} - Array of moves to solve the puzzle
  */
-exports.solve = function(diskCount) {
+export function solve(diskCount) {
     // Validate inputs
     if (diskCount < 1) {
         throw new Error('Disk count must be at least 1');
@@ -36,7 +36,7 @@ exports.solve = function(diskCount) {
     logger.info(`Frame-Stewart algorithm found solution with ${moves.length} moves for ${diskCount} disks and 4 pegs`);
     
     return moves;
-};
+}
 
 /**
  * Calculate the optimal value of k for the Frame-Stewart algorithm
@@ -110,3 +110,5 @@ function classicalTOH(numDisks, fromPeg, toPeg, auxPeg, moves) {
     // Move n-1 disks from auxiliary to destination
     classicalTOH(numDisks - 1, auxPeg, toPeg, fromPeg, moves);
 }
+
+export default { solve };

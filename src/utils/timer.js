@@ -1,88 +1,53 @@
 /**
- * Timer utility for measuring algorithm performance
+ * Timer utility for measuring execution time
  */
 class Timer {
   constructor() {
-    this.startTime = 0;
-    this.endTime = 0;
-    this.running = false;
+    this.startTime = null;
+    this.endTime = null;
   }
 
-  /**
-   * Start the timer
-   */
   start() {
-    this.startTime = process.hrtime.bigint();
-    this.running = true;
-    return this;
+    this.startTime = performance.now();
+    this.endTime = null;
+    return this.startTime;
   }
 
-  /**
-   * Stop the timer
-   */
   stop() {
-    if (!this.running) {
-      throw new Error('Timer is not running');
+    if (this.startTime === null) {
+      throw new Error('Timer is not running.');
     }
-    this.endTime = process.hrtime.bigint();
-    this.running = false;
-    return this;
+    if (this.endTime !== null) {
+      throw new Error('Timer is not running.');
+    }
+    this.endTime = performance.now();
+    return this.endTime - this.startTime;
   }
 
-  /**
-   * Reset the timer
-   */
-  reset() {
-    this.startTime = 0;
-    this.endTime = 0;
-    this.running = false;
-    return this;
-  }
-
-  /**
-   * Get elapsed time in milliseconds
-   */
   getElapsedTimeMs() {
-    if (this.running) {
-      const currentTime = process.hrtime.bigint();
-      return Number(currentTime - this.startTime) / 1000000;
+    if (this.startTime === null || this.endTime === null) {
+      return 0;
     }
-    return Number(this.endTime - this.startTime) / 1000000;
+    return this.endTime - this.startTime;
   }
 
-  /**
-   * Execute a function and measure its execution time
-   * @param {Function} fn - Function to execute
-   * @param {Array} args - Arguments to pass to the function
-   * @returns {Object} Object containing the execution time and function result
-   */
-  static measure(fn, ...args) {
-    const timer = new Timer().start();
-    const result = fn(...args);
-    timer.stop();
-    
-    return {
-      executionTimeMs: timer.getElapsedTimeMs(),
-      result
-    };
+  getDurationInSeconds() {
+    return this.getElapsedTimeMs() / 1000;
   }
 
-  /**
-   * Execute an async function and measure its execution time
-   * @param {Function} fn - Async function to execute
-   * @param {Array} args - Arguments to pass to the function
-   * @returns {Promise<Object>} Promise resolving to object with execution time and function result
-   */
-  static async measureAsync(fn, ...args) {
-    const timer = new Timer().start();
-    const result = await fn(...args);
-    timer.stop();
-    
-    return {
-      executionTimeMs: timer.getElapsedTimeMs(),
-      result
-    };
+  reset() {
+    this.startTime = null;
+    this.endTime = null;
   }
 }
 
-module.exports = Timer;
+// Helper function for UI performance optimizations
+export function debounce(func, wait = 100) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+export default Timer;

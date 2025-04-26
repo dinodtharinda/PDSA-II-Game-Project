@@ -1,38 +1,49 @@
-const logger = require('../utils/logger');
+import logger from '../utils/logger.js';
 
-/**
- * Global error handling middleware
- * @param {Error} err - Error object
- * @param {Request} req - Express request object
- * @param {Response} res - Express response object
- * @param {Function} next - Express next function
- */
-const errorHandler = (err, req, res, next) => {
+// Custom error classes
+export class AppError extends Error {
+  constructor(message, statusCode = 500, details = {}) {
+    super(message);
+    this.name = this.constructor.name;
+    this.statusCode = statusCode;
+    this.details = details;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message, details = {}) {
+    super(message, 400, details);
+  }
+}
+
+// Error handling middleware
+export function errorHandler(err, req, res, next) {
   // Log the error
-  logger.error(`${err.name}: ${err.message}`);
   logger.error(err.stack);
 
   // Set default status code and message
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
 
-  // Send response based on request type
-  if (req.xhr || req.headers.accept.indexOf('json') > -1) {
-    // For AJAX or API requests
-    return res.status(statusCode).json({
-      error: {
-        message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-      }
-    });
+  // Handle specific error types
+  if (err instanceof ValidationError) {
+    statusCode = 400;
+  } else if (err.name === 'SequelizeValidationError') {
+    statusCode = 400;
+    message = err.errors.map(e => e.message).join(', ');
+  } else if (err.name === 'SequelizeUniqueConstraintError') {
+    statusCode = 409;
+    message = 'Resource already exists';
   }
 
-  // For regular page requests, render an error page
-  res.status(statusCode);
-  res.render('pages/error', {
-    message,
-    error: process.env.NODE_ENV === 'development' ? err : {}
+  // Send error response
+  res.status(statusCode).json({
+    error: {
+      message,
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    }
   });
-};
+}
 
-module.exports = errorHandler;
+export default errorHandler;

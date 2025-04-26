@@ -1,71 +1,80 @@
-/**
- * Recursive algorithm implementation for the Tower of Hanoi puzzle.
- * 
- * This is the classical recursive solution that works optimally for the 3-peg variant,
- * and can be extended to the 4-peg variant (although not optimally).
- */
-
-const timer = require('../../../utils/timer');
-const logger = require('../../../utils/logger');
+import logger from '../../../utils/logger.js';
 
 /**
- * Solve the Tower of Hanoi puzzle using the recursive algorithm
- * @param {number} diskCount - Number of disks
- * @param {number} pegCount - Number of pegs (3 or 4)
- * @returns {Array} - Array of moves to solve the puzzle
+ * Solve Tower of Hanoi recursively
+ * @param {number} n - Number of disks
+ * @param {number} source - Source peg (0-based)
+ * @param {number} target - Target peg (0-based)
+ * @param {number} auxiliary - Auxiliary peg (0-based)
+ * @returns {Array} Array of moves in format {from, to}
  */
-exports.solve = function(diskCount, pegCount) {
-    // Validate inputs
-    if (diskCount < 1) {
-        throw new Error('Disk count must be at least 1');
-    }
-    
-    if (pegCount !== 3 && pegCount !== 4) {
-        throw new Error('Peg count must be either 3 or 4');
-    }
-    
-    // Initialize moves array
+export function solveRecursive(n, source = 0, target = 2, auxiliary = 1) {
     const moves = [];
-    
-    // Start recursion
-    if (pegCount === 3) {
-        // For 3 pegs, use the standard recursive algorithm
-        moveTower(diskCount, 0, 2, 1, moves);
-    } else if (pegCount === 4) {
-        // For 4 pegs, we still use recursion but less optimally than Frame-Stewart
-        // We use the first 3 pegs to move all but the last disk, then move the last disk
-        // to the 4th peg, then use the first 3 pegs to move the remaining disks to the 4th peg
-        moveTower(diskCount - 1, 0, 1, 2, moves);
-        moves.push({ from: 0, to: 3, disk: diskCount });
-        moveTower(diskCount - 1, 1, 3, 2, moves);
+
+    function moveDisks(disks, from, to, aux) {
+        if (disks === 1) {
+            moves.push({ from, to });
+            return;
+        }
+        moveDisks(disks - 1, from, aux, to);
+        moves.push({ from, to });
+        moveDisks(disks - 1, aux, to, from);
     }
-    
-    logger.info(`Recursive algorithm found solution with ${moves.length} moves for ${diskCount} disks and ${pegCount} pegs`);
-    
-    return moves;
-};
+
+    try {
+        moveDisks(n, source, target, auxiliary);
+        logger.info(`Found recursive solution with ${moves.length} moves`);
+        return moves;
+    } catch (error) {
+        logger.error(`Error in recursive solution: ${error.message}`);
+        throw error;
+    }
+}
 
 /**
- * Recursive function to move a tower of disks from one peg to another
- * @param {number} numDisks - Number of disks to move
- * @param {number} fromPeg - Source peg index
- * @param {number} toPeg - Destination peg index
- * @param {number} auxPeg - Auxiliary peg index
- * @param {Array} moves - Array to store the moves
+ * Validate a solution for Tower of Hanoi
+ * @param {Array} moves - Array of moves to validate
+ * @param {number} diskCount - Number of disks
+ * @returns {boolean} Whether the solution is valid
  */
-function moveTower(numDisks, fromPeg, toPeg, auxPeg, moves) {
-    if (numDisks === 1) {
-        // Base case: move a single disk
-        moves.push({ from: fromPeg, to: toPeg, disk: numDisks });
-        return;
+export function validateSolution(moves, diskCount) {
+    // Simulate the moves
+    const pegs = [
+        Array.from({length: diskCount}, (_, i) => diskCount - i),
+        [],
+        []
+    ];
+
+    try {
+        for (const move of moves) {
+            const { from, to } = move;
+            
+            // Check if source peg has disks
+            if (pegs[from].length === 0) {
+                return false;
+            }
+
+            const disk = pegs[from][pegs[from].length - 1];
+            
+            // Check if move is valid (smaller disk on larger disk)
+            if (pegs[to].length > 0 && pegs[to][pegs[to].length - 1] < disk) {
+                return false;
+            }
+
+            // Make the move
+            pegs[to].push(pegs[from].pop());
+        }
+
+        // Check if all disks are on the target peg
+        return pegs[2].length === diskCount && 
+               pegs[2].every((disk, i) => disk === diskCount - i);
+    } catch (error) {
+        logger.error(`Error validating solution: ${error.message}`);
+        return false;
     }
-    
-    // Move n-1 disks from source to auxiliary peg
-    moveTower(numDisks - 1, fromPeg, auxPeg, toPeg, moves);
-    
-    // Move the nth disk from source to destination
-    moves.push({ from: fromPeg, to: toPeg, disk: numDisks });
-    
-    // Move n-1 disks from auxiliary to destination
-    moveTower(numDisks - 1, auxPeg, toPeg, fromPeg, moves);
 }
+
+export default {
+    solve: solveRecursive,
+    validate: validateSolution
+};

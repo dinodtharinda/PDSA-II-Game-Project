@@ -3,10 +3,10 @@
  * Implements a 5×5 grid with intelligent computer moves
  */
 
-const db = require('../../config/db');
-const Timer = require('../../utils/timer');
-const logger = require('../../utils/logger');
-const validator = require('../../utils/validator');
+import db from '../../config/db.js';
+import Timer from '../../utils/timer.js';
+import logger from '../../utils/logger.js';
+import validator from '../../utils/validator.js';
 
 class TicTacToe {
     constructor() {
@@ -261,4 +261,4 @@ class TicTacToe {
     }
 }
 
-module.exports = TicTacToe;
+export default TicTacToe;

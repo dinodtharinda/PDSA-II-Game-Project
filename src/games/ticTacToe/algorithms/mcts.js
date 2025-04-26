@@ -295,4 +295,4 @@ class MCTS {
     }
 }
 
-module.exports = MCTS;
+export default MCTS;

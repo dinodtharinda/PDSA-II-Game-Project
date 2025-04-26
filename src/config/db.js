@@ -1,13 +1,38 @@
-// Database connection configuration
-const { Sequelize } = require('sequelize');
-const path = require('path');
+import { Sequelize } from 'sequelize';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import config from './index.js';
+import logger from '../utils/logger.js';
 
-const dbPath = path.join(__dirname, '../../database/game.db');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: dbPath,
-  logging: false
-});
+let sequelize;
 
-module.exports = sequelize;
+export const initializeDatabase = async () => {
+  if (!sequelize) {
+    try {
+      sequelize = new Sequelize({
+        dialect: config.db.options.dialect,
+        storage: path.resolve(__dirname, '../../', config.db.path),
+        logging: (msg) => config.db.options.logging ? logger.debug(msg) : null,
+        ...config.db.options
+      });
+
+      // Test the connection
+      await sequelize.authenticate();
+      logger.info('Database connection established successfully.');
+    } catch (error) {
+      logger.error('Unable to connect to the database:', error);
+      throw error;
+    }
+  }
+  return sequelize;
+};
+
+export const getSequelize = () => {
+  if (!sequelize) {
+    throw new Error('Database connection not initialized. Call initializeDatabase() first.');
+  }
+  return sequelize;
+};

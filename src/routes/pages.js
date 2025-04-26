@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as gameController from '../controllers/gameController.js';
+import * as statsController from '../controllers/statsController.js';
+import authenticate from '../middleware/auth.js';
+
 const router = express.Router();
-const gameController = require('../controllers/gameController');
-const statsController = require('../controllers/statsController');
-const authenticate = require('../middleware/auth');
 
 // Home page
 router.get('/', (req, res) => {
@@ -60,4 +61,4 @@ router.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-module.exports = router;
+export default router;

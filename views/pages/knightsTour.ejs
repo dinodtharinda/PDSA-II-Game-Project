@@ -74,4 +74,14 @@
     </div>
 </div>
 
-<script src="/js/knightsTour.js"></script>
+<!-- Initialize game using ES modules -->
+<script type="module">
+    import { KnightsTourUI } from '/src/games/knightsTour/ui/index.js';
+    import KnightsTour from '/src/games/knightsTour/game.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        const game = new KnightsTour();
+        const ui = new KnightsTourUI();
+        await ui.initialize(game);
+    });
+</script>

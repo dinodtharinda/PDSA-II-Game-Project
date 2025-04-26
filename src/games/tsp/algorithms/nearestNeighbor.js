@@ -54,4 +54,4 @@ function nearestNeighbor(distanceMatrix, cities, startIndex) {
     };
 }
 
-module.exports = nearestNeighbor;
+export default nearestNeighbor;

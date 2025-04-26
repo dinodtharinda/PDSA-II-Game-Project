@@ -55,16 +55,12 @@
     </div>
 </div>
 
-<!-- Load game bundle -->
-<script src="/js/eightQueens.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize game
-        initEightQueens();
-    });
+<!-- Initialize game using ES modules -->
+<script type="module">
+    import { EightQueensUI } from '/src/games/eightQueens/ui/index.js';
     
-    function initEightQueens() {
+    document.addEventListener('DOMContentLoaded', async () => {
         const gameUI = new EightQueensUI();
-        gameUI.initialize('queens-board', 'queens-controls').catch(console.error);
-    }
+        await gameUI.initialize('queens-board', 'queens-controls');
+    });
 </script>

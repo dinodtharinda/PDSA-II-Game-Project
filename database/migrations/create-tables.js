@@ -1,172 +1,242 @@
-/**
- * Database migrations script
- * This script creates all necessary tables for the game project
- */
-const sqlite3 = require('sqlite3').verbose();
+const { DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
+const { Sequelize } = require('sequelize');
 const path = require('path');
-const logger = require('../../src/utils/logger');
 
-// Connect to database
-const dbPath = path.join(__dirname, '..', 'game.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    logger.error(`Database connection error: ${err.message}`);
-    process.exit(1);
-  }
-  logger.info(`Connected to database: ${dbPath}`);
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: path.join(__dirname, '../game.db'),
+  logging: false
 });
 
-// Enable foreign keys
-db.run('PRAGMA foreign_keys = ON');
+async function migrate() {
+  try {
+    console.log('Starting database migration...');
 
-// Create tables
-const createTables = () => {
-  logger.info('Creating database tables...');
+    // Players table
+    console.log('Creating players table...');
+    await sequelize.getQueryInterface().createTable('players', {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      username: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      role: {
+        type: DataTypes.ENUM('player', 'admin'),
+        defaultValue: 'player'
+      },
+      verified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
+      verification_token: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      reset_password_token: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      reset_password_expires: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      last_login: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+      }
+    });
+    console.log('Players table created successfully');
 
-  // Players table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS players (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating players table: ${err.message}`);
-      return;
-    }
-    logger.info('Players table created successfully');
-  });
+    // Games table
+    console.log('Creating games table...');
+    await sequelize.getQueryInterface().createTable('games', {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      player_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'players',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      game_type: {
+        type: DataTypes.ENUM(
+          'ticTacToe',
+          'tsp',
+          'towerOfHanoi',
+          'eightQueens',
+          'knightsTour'
+        ),
+        allowNull: false
+      },
+      status: {
+        type: DataTypes.ENUM(
+          'in_progress',
+          'completed',
+          'abandoned'
+        ),
+        defaultValue: 'in_progress'
+      },
+      start_time: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      },
+      end_time: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+      duration_seconds: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      moves: {
+        type: DataTypes.JSON,
+        defaultValue: '[]'
+      },
+      score: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      algorithm_used: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      solution_found: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true
+      },
+      execution_time: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+      },
+      settings: {
+        type: DataTypes.JSON,
+        defaultValue: '{}'
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+      }
+    });
+    console.log('Games table created successfully');
 
-  // Games table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS games (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      game_type TEXT NOT NULL,
-      start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      end_time TIMESTAMP,
-      player_id INTEGER,
-      result TEXT,
-      FOREIGN KEY (player_id) REFERENCES players (id)
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating games table: ${err.message}`);
-      return;
-    }
-    logger.info('Games table created successfully');
-  });
+    // Performances table
+    console.log('Creating performances table...');
+    await sequelize.getQueryInterface().createTable('performances', {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      game_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'games',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      algorithm_name: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      execution_time: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      memory_used: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      iterations: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      solution_quality: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+      },
+      parameters: {
+        type: DataTypes.JSON,
+        defaultValue: '{}'
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+      }
+    });
+    console.log('Performances table created successfully');
 
-  // TicTacToe table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS tic_tac_toe (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      game_id INTEGER NOT NULL,
-      algorithm_type TEXT NOT NULL,
-      move_time REAL NOT NULL,
-      move_number INTEGER NOT NULL,
-      FOREIGN KEY (game_id) REFERENCES games (id)
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating tic_tac_toe table: ${err.message}`);
-      return;
-    }
-    logger.info('TicTacToe table created successfully');
-  });
+    // Add indexes
+    console.log('Creating indexes...');
+    await sequelize.getQueryInterface().addIndex('games', ['player_id']);
+    await sequelize.getQueryInterface().addIndex('games', ['game_type']);
+    await sequelize.getQueryInterface().addIndex('games', ['start_time']);
+    await sequelize.getQueryInterface().addIndex('performances', ['game_id']);
+    await sequelize.getQueryInterface().addIndex('performances', ['algorithm_name']);
+    console.log('Indexes created successfully');
 
-  // TravelingSalesman table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS traveling_salesman (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      game_id INTEGER NOT NULL,
-      home_city TEXT NOT NULL,
-      selected_cities TEXT NOT NULL,
-      shortest_route TEXT NOT NULL,
-      algorithm_type TEXT NOT NULL,
-      execution_time REAL NOT NULL,
-      FOREIGN KEY (game_id) REFERENCES games (id)
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating traveling_salesman table: ${err.message}`);
-      return;
-    }
-    logger.info('TravelingSalesman table created successfully');
-  });
+    // Create admin user
+    console.log('Creating admin user...');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await sequelize.getQueryInterface().bulkInsert('players', [{
+      username: 'admin',
+      email: 'admin@example.com',
+      password: hashedPassword,
+      role: 'admin',
+      verified: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    }]);
+    console.log('Admin user created successfully');
 
-  // TowerOfHanoi table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS tower_of_hanoi (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      game_id INTEGER NOT NULL,
-      disk_count INTEGER NOT NULL,
-      move_count INTEGER NOT NULL,
-      move_sequence TEXT NOT NULL,
-      algorithm_type TEXT NOT NULL,
-      execution_time REAL NOT NULL,
-      FOREIGN KEY (game_id) REFERENCES games (id)
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating tower_of_hanoi table: ${err.message}`);
-      return;
-    }
-    logger.info('TowerOfHanoi table created successfully');
-  });
+    console.log('Database migration completed successfully');
+    process.exit(0);
+  } catch (error) {
+    console.error('Migration failed:', error);
+    process.exit(1);
+  }
+}
 
-  // EightQueens table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS eight_queens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      game_id INTEGER NOT NULL,
-      solution TEXT NOT NULL,
-      solution_number INTEGER NOT NULL,
-      algorithm_type TEXT NOT NULL,
-      execution_time REAL NOT NULL,
-      is_identified BOOLEAN DEFAULT FALSE,
-      FOREIGN KEY (game_id) REFERENCES games (id)
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating eight_queens table: ${err.message}`);
-      return;
-    }
-    logger.info('EightQueens table created successfully');
-  });
-
-  // KnightsTour table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS knights_tour (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      game_id INTEGER NOT NULL,
-      start_position TEXT NOT NULL,
-      move_sequence TEXT NOT NULL,
-      algorithm_type TEXT NOT NULL,
-      execution_time REAL NOT NULL,
-      FOREIGN KEY (game_id) REFERENCES games (id)
-    )
-  `, (err) => {
-    if (err) {
-      logger.error(`Error creating knights_tour table: ${err.message}`);
-      return;
-    }
-    logger.info('KnightsTour table created successfully');
-  });
-};
-
-// Run migrations
-createTables();
-
-// Close database connection after migrations complete
-setTimeout(() => {
-  db.close((err) => {
-    if (err) {
-      logger.error(`Error closing database: ${err.message}`);
-      return;
-    }
-    logger.info('Database connection closed');
-  });
-}, 1000);
-
-module.exports = { createTables };
+// Run migration
+migrate();

@@ -172,4 +172,4 @@ function getPermutations(arr) {
     return result;
 }
 
-module.exports = dynamicProgramming;
+export default dynamicProgramming;

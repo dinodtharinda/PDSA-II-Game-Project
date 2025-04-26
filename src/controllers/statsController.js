@@ -2,10 +2,10 @@
  * Stats Controller
  * Handles all statistics-related operations
  */
-const logger = require('../utils/logger');
+import logger from '../utils/logger.js';
 
 // Get overview statistics
-const getOverviewStats = async (req, res, next) => {
+export const getOverviewStats = async (req, res, next) => {
   try {
     // Placeholder for actual statistics logic
     const stats = {
@@ -35,23 +35,27 @@ const getOverviewStats = async (req, res, next) => {
 };
 
 // Get player statistics
-const getPlayerStats = async (req, res, next) => {
+export const getPlayerStats = async (req, res, next) => {
   try {
     // Placeholder for player statistics
     const playerId = req.params.id;
     const stats = {
-      playerId,
-      playerName: `Player ${playerId}`,
-      gamesPlayed: 3,
-      gamesByType: {
-        ticTacToe: 1,
-        tsp: 1,
-        towerOfHanoi: 0,
-        eightQueens: 1,
-        knightsTour: 0
+      player: {
+        id: playerId,
+        name: `Player ${playerId}`,
       },
-      winRate: 0.67,
-      averageTimePerGame: 1.23
+      games: {
+        total: 3,
+        byType: {
+          ticTacToe: 1,
+          tsp: 1,
+          towerOfHanoi: 0,
+          eightQueens: 1,
+          knightsTour: 0
+        },
+        winRate: 0.67,
+        averageTimePerGame: 1.23
+      }
     };
     
     res.json(stats);
@@ -62,7 +66,7 @@ const getPlayerStats = async (req, res, next) => {
 };
 
 // Get game type statistics
-const getGameTypeStats = async (req, res, next) => {
+export const getGameTypeStats = async (req, res, next) => {
   try {
     // Placeholder for game type statistics
     const gameType = req.params.gameType;
@@ -84,7 +88,7 @@ const getGameTypeStats = async (req, res, next) => {
 };
 
 // Get algorithm statistics
-const getAlgorithmStats = async (req, res, next) => {
+export const getAlgorithmStats = async (req, res, next) => {
   try {
     // Placeholder for algorithm statistics
     const gameType = req.params.gameType;
@@ -92,7 +96,7 @@ const getAlgorithmStats = async (req, res, next) => {
     const stats = {
       gameType,
       algorithm,
-      totalRuns: 25,
+      totalUses: 25, // Changed from totalRuns to totalUses to match test expectations
       averageExecutionTime: 0.187,
       fastestRun: 0.023,
       slowestRun: 0.312,
@@ -109,11 +113,4 @@ const getAlgorithmStats = async (req, res, next) => {
     logger.error(`Error getting algorithm stats: ${err.message}`);
     next(err);
   }
-};
-
-module.exports = {
-  getOverviewStats,
-  getPlayerStats,
-  getGameTypeStats,
-  getAlgorithmStats
 };

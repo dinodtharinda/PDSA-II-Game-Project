@@ -53,29 +53,18 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Load game styles
+<!-- Initialize game using ES modules -->
+<script type="module">
+    import { TicTacToeUI } from '/src/games/ticTacToe/ui/index.js';
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Load game styles through Vite
         const gameStyles = document.createElement('link');
         gameStyles.rel = 'stylesheet';
-        gameStyles.href = '/css/games.css';
+        gameStyles.href = '/src/games/ticTacToe/styles/game.css';
         document.head.appendChild(gameStyles);
         
-        // Initialize game
-        initTicTacToe();
+        const gameUI = new TicTacToeUI();
+        await gameUI.initialize('tic-tac-toe-board', 'tic-tac-toe-controls');
     });
-    
-    function initTicTacToe() {
-        const gameScript = document.createElement('script');
-        gameScript.src = '/js/ticTacToe.js';
-        gameScript.onload = function() {
-            if (typeof TicTacToeUI !== 'undefined') {
-                const gameUI = new TicTacToeUI();
-                gameUI.initialize('tic-tac-toe-board', 'tic-tac-toe-controls');
-            } else {
-                console.error('Tic Tac Toe UI module not found');
-            }
-        };
-        document.body.appendChild(gameScript);
-    }
 </script>

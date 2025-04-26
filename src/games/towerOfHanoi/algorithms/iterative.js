@@ -1,141 +1,118 @@
-/**
- * Iterative algorithm implementation for the Tower of Hanoi puzzle.
- * 
- * This provides a non-recursive solution to the Tower of Hanoi problem,
- * which can be more efficient for large numbers of disks as it avoids
- * the risk of stack overflow.
- */
-
-const timer = require('../../../utils/timer');
-const logger = require('../../../utils/logger');
+import logger from '../../../utils/logger.js';
 
 /**
- * Solve the Tower of Hanoi puzzle using an iterative algorithm
- * @param {number} diskCount - Number of disks
- * @param {number} pegCount - Number of pegs (3 or 4)
- * @returns {Array} - Array of moves to solve the puzzle
+ * Solve Tower of Hanoi iteratively
+ * @param {number} n - Number of disks
+ * @param {number} source - Source peg (0-based)
+ * @param {number} target - Target peg (0-based)
+ * @param {number} auxiliary - Auxiliary peg (0-based)
+ * @returns {Array} Array of moves in format {from, to}
  */
-exports.solve = function(diskCount, pegCount) {
-    // Validate inputs
-    if (diskCount < 1) {
-        throw new Error('Disk count must be at least 1');
-    }
-    
-    if (pegCount !== 3 && pegCount !== 4) {
-        throw new Error('Peg count must be either 3 or 4');
-    }
-    
-    // Initialize moves array
+export function solveIterative(n, source = 0, target = 2, auxiliary = 1) {
     const moves = [];
     
-    if (pegCount === 3) {
-        // For 3 pegs, use the standard iterative algorithm
-        solveThreePegs(diskCount, moves);
-    } else {
-        // For 4 pegs, revert to a 3-peg approach (less optimal)
-        // Conceptually similar to the recursive approach for 4 pegs
-        const subTowerMoves = [];
-        solveThreePegs(diskCount - 1, subTowerMoves);
+    try {
+        // For odd number of disks, follow pattern: source → target → auxiliary → source
+        // For even number of disks, follow pattern: source → auxiliary → target → source
+        const totalMoves = Math.pow(2, n) - 1;
         
-        // Modify the moves to use different pegs
-        // First move n-1 disks from peg 0 to peg 1 using peg 2 as auxiliary
-        for (let move of subTowerMoves) {
-            moves.push(move);
+        for (let i = 1; i <= totalMoves; i++) {
+            // Get source and destination pegs for current move
+            const [from, to] = getNextMove(i, n, source, auxiliary, target);
+            moves.push({ from, to });
         }
         
-        // Move the largest disk to peg 3
-        moves.push({ from: 0, to: 3, disk: diskCount });
-        
-        // Now move the n-1 disks from peg 1 to peg 3 using peg 2 as auxiliary
-        for (let move of subTowerMoves) {
-            const newFrom = move.from === 0 ? 1 : (move.from === 1 ? 0 : move.from);
-            const newTo = move.to === 0 ? 1 : (move.to === 1 ? 3 : move.to);
-            moves.push({ from: newFrom, to: newTo, disk: move.disk });
-        }
-    }
-    
-    logger.info(`Iterative algorithm found solution with ${moves.length} moves for ${diskCount} disks and ${pegCount} pegs`);
-    
-    return moves;
-};
-
-/**
- * Solve the 3-peg Tower of Hanoi puzzle using an iterative algorithm
- * @param {number} diskCount - Number of disks
- * @param {Array} moves - Array to store the moves
- */
-function solveThreePegs(diskCount, moves) {
-    // The total number of moves required is 2^n - 1
-    const totalMoves = Math.pow(2, diskCount) - 1;
-    
-    /*
-     * For even numbers of disks:
-     * - Make the legal move between pegs 0 and 1
-     * - Make the legal move between pegs 0 and 2
-     * - Make the legal move between pegs 1 and 2
-     * Repeat until done
-     *
-     * For odd numbers of disks:
-     * - Make the legal move between pegs 0 and 2
-     * - Make the legal move between pegs 0 and 1
-     * - Make the legal move between pegs 1 and 2
-     * Repeat until done
-     */
-    
-    // Create an array to represent the pegs and their disks
-    const pegs = [[], [], []];
-    
-    // Initialize the first peg with all disks
-    for (let i = diskCount; i >= 1; i--) {
-        pegs[0].push(i);
-    }
-    
-    // For odd disk counts, swap the order of the first move sequence
-    const isOddDiskCount = diskCount % 2 === 1;
-    
-    // Define the peg pairs for moves in the correct order
-    const pegPairs = isOddDiskCount 
-        ? [[0, 2], [0, 1], [1, 2]]  // Odd number of disks
-        : [[0, 1], [0, 2], [1, 2]]; // Even number of disks
-    
-    // Iterate through all moves
-    for (let moveIndex = 0; moveIndex < totalMoves; moveIndex++) {
-        // Determine which peg pair to use for this move
-        const pegPairIndex = moveIndex % 3;
-        const [fromPegCandidate1, fromPegCandidate2] = pegPairs[pegPairIndex];
-        
-        // Determine which peg has the smaller top disk (or which one has a disk)
-        let fromPeg, toPeg;
-        
-        if (pegs[fromPegCandidate1].length === 0) {
-            // First peg is empty, must move from second peg
-            fromPeg = fromPegCandidate2;
-            toPeg = fromPegCandidate1;
-        } else if (pegs[fromPegCandidate2].length === 0) {
-            // Second peg is empty, must move from first peg
-            fromPeg = fromPegCandidate1;
-            toPeg = fromPegCandidate2;
-        } else {
-            // Both pegs have disks, compare top disks
-            const topDisk1 = pegs[fromPegCandidate1][pegs[fromPegCandidate1].length - 1];
-            const topDisk2 = pegs[fromPegCandidate2][pegs[fromPegCandidate2].length - 1];
-            
-            if (topDisk1 < topDisk2) {
-                // Top disk on first peg is smaller
-                fromPeg = fromPegCandidate1;
-                toPeg = fromPegCandidate2;
-            } else {
-                // Top disk on second peg is smaller
-                fromPeg = fromPegCandidate2;
-                toPeg = fromPegCandidate1;
-            }
-        }
-        
-        // Make the move
-        const disk = pegs[fromPeg].pop();
-        pegs[toPeg].push(disk);
-        
-        // Record the move
-        moves.push({ from: fromPeg, to: toPeg, disk });
+        logger.info(`Found iterative solution with ${moves.length} moves`);
+        return moves;
+    } catch (error) {
+        logger.error(`Error in iterative solution: ${error.message}`);
+        throw error;
     }
 }
+
+/**
+ * Get source and destination pegs for current move
+ * @param {number} move - Current move number
+ * @param {number} n - Total number of disks
+ * @param {number} source - Source peg
+ * @param {number} auxiliary - Auxiliary peg
+ * @param {number} target - Target peg
+ * @returns {Array} Array with [from, to] peg indices
+ */
+function getNextMove(move, n, source, auxiliary, target) {
+    // Use binary representation of move number to determine disk to move
+    const disk = getBitPosition(move);
+    
+    if (disk % 2 === 1) {
+        // Odd numbered disks follow one pattern
+        if (n % 2 === 1) {
+            return [(move + source) % 3, (move + target) % 3];
+        } else {
+            return [(move + source) % 3, (move + auxiliary) % 3];
+        }
+    } else {
+        // Even numbered disks follow another pattern
+        if (n % 2 === 1) {
+            return [(move + auxiliary) % 3, (move + target) % 3];
+        } else {
+            return [(move + target) % 3, (move + source) % 3];
+        }
+    }
+}
+
+/**
+ * Get rightmost set bit position
+ * @param {number} n - Number to check
+ * @returns {number} Position of rightmost set bit
+ */
+function getBitPosition(n) {
+    let position = 1;
+    while ((n & 1) === 0) {
+        n = n >> 1;
+        position++;
+    }
+    return position;
+}
+
+/**
+ * Validate a solution for Tower of Hanoi
+ * @param {Array} moves - Array of moves to validate
+ * @param {number} diskCount - Number of disks
+ * @returns {boolean} Whether the solution is valid
+ */
+export function validateSolution(moves, diskCount) {
+    const pegs = [
+        Array.from({length: diskCount}, (_, i) => diskCount - i),
+        [],
+        []
+    ];
+
+    try {
+        for (const move of moves) {
+            const { from, to } = move;
+            
+            if (pegs[from].length === 0) {
+                return false;
+            }
+
+            const disk = pegs[from][pegs[from].length - 1];
+            
+            if (pegs[to].length > 0 && pegs[to][pegs[to].length - 1] < disk) {
+                return false;
+            }
+
+            pegs[to].push(pegs[from].pop());
+        }
+
+        return pegs[2].length === diskCount && 
+               pegs[2].every((disk, i) => disk === diskCount - i);
+    } catch (error) {
+        logger.error(`Error validating solution: ${error.message}`);
+        return false;
+    }
+}
+
+export default {
+    solve: solveIterative,
+    validate: validateSolution
+};

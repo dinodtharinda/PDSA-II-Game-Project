@@ -3,8 +3,8 @@
  * This file handles the core game logic for the TSP game
  */
 
-const Timer = require('../../utils/timer');
-const logger = require('../../utils/logger');
+import Timer from '../../utils/timer.js';
+import logger from '../../utils/logger.js';
 
 class TSPGame {
     constructor() {
@@ -302,4 +302,4 @@ class TSPGame {
     }
 }
 
-module.exports = TSPGame;
+export default TSPGame;
