@@ -3,6 +3,9 @@
  * Uses alpha-beta pruning for optimization
  */
 
+import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
+
 class Minimax {
     /**
      * Find the best move using minimax algorithm with alpha-beta pruning
@@ -214,6 +217,37 @@ class Minimax {
      */
     static isBoardFull(board) {
         return board.every(row => row.every(cell => cell !== null));
+    }
+
+    /**
+     * Save performance metrics to database
+     * @param {Object} game - Game instance
+     * @param {string} algorithm - Algorithm name
+     * @param {Object} result - Algorithm result
+     * @returns {Promise<void>}
+     */
+    static async savePerformanceMetrics(game, algorithm, result) {
+        if (!game.gameId) return;
+        
+        try {
+            await trackAlgorithmPerformance({
+                gameId: game.gameId,
+                algorithmName: algorithm,
+                executionTime: result.executionTime,
+                solutionFound: result.success !== undefined ? result.success : true,
+                iterations: 1, // One move calculated
+                parameters: {
+                    boardSize: 5,
+                    moveNumber: game.moveCount,
+                    player: game.currentPlayer,
+                    evaluatedPositions: result.evaluatedPositions || 0
+                }
+            });
+            
+            logger.info(`Performance metrics saved for ${algorithm} algorithm`);
+        } catch (error) {
+            logger.error(`Failed to save performance metrics: ${error.message}`);
+        }
     }
 }
 

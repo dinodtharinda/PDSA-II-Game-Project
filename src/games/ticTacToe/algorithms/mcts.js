@@ -3,6 +3,9 @@
  * Uses UCT (Upper Confidence Bounds for Trees) for node selection
  */
 
+import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
+
 class MCTSNode {
     constructor(board, parent = null, move = null) {
         this.board = board.map(row => [...row]);
@@ -292,6 +295,37 @@ class MCTS {
      */
     static isBoardFull(board) {
         return board.every(row => row.every(cell => cell !== null));
+    }
+
+    /**
+     * Save performance metrics to database
+     * @param {Object} game - Game instance
+     * @param {string} algorithm - Algorithm name
+     * @param {Object} result - Algorithm result
+     * @returns {Promise<void>}
+     */
+    static async savePerformanceMetrics(game, algorithm, result) {
+        if (!game.gameId) return;
+        
+        try {
+            await trackAlgorithmPerformance({
+                gameId: game.gameId,
+                algorithmName: algorithm,
+                executionTime: result.executionTime,
+                solutionFound: result.success !== undefined ? result.success : true,
+                iterations: result.simulations || 1000, // Number of MCTS simulations
+                parameters: {
+                    boardSize: 5,
+                    moveNumber: game.moveCount,
+                    player: game.currentPlayer,
+                    simulationCount: result.simulations || 1000
+                }
+            });
+            
+            logger.info(`Performance metrics saved for ${algorithm} algorithm`);
+        } catch (error) {
+            logger.error(`Failed to save performance metrics: ${error.message}`);
+        }
     }
 }
 

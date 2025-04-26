@@ -64,7 +64,12 @@
         gameStyles.href = '/src/games/ticTacToe/styles/game.css';
         document.head.appendChild(gameStyles);
         
-        const gameUI = new TicTacToeUI();
+        // Get player ID from session or localStorage if available
+        const playerId = localStorage.getItem('playerId') || 
+                         sessionStorage.getItem('playerId') || 
+                         '<%= locals.playerId || "" %>';
+                         
+        const gameUI = new TicTacToeUI(playerId || null);
         await gameUI.initialize('tic-tac-toe-board', 'tic-tac-toe-controls');
     });
 </script>

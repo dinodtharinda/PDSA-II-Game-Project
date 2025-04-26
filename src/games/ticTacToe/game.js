@@ -3,23 +3,61 @@
  * Implements a 5×5 grid with intelligent computer moves
  */
 
-import db from '../../config/db.js';
+import { getSequelize } from '../../config/db.js';
 import Timer from '../../utils/timer.js';
 import logger from '../../utils/logger.js';
 import validator from '../../utils/validator.js';
+import { trackAlgorithmPerformance } from '../../utils/performanceTracker.js';
 
 class TicTacToe {
-    constructor() {
+    constructor(playerId = null) {
         // Initialize 5x5 board
         this.board = Array(5).fill().map(() => Array(5).fill(null));
         this.currentPlayer = 'X'; // X always starts
         this.winner = null;
         this.moveCount = 0;
         this.gameId = null;
+        this.playerId = playerId;
         this.timer = new Timer();
         this.timer.start(); // Start timer when game is created
         this.gameOver = false;
         this.isGameActive = true;
+        
+        // Create database record if player ID is provided
+        if (this.playerId) {
+            this.createGameRecord();
+        }
+    }
+
+    /**
+     * Create a game record in the database
+     * @returns {Promise<void>}
+     */
+    async createGameRecord() {
+        try {
+            const db = await getSequelize();
+            // Create a new game record
+            const [results] = await db.query(`
+                INSERT INTO games 
+                (game_type, player_id, settings, status, start_time) 
+                VALUES 
+                (?, ?, ?, 'in_progress', NOW())
+            `, {
+                replacements: [
+                    'ticTacToe', 
+                    this.playerId,
+                    JSON.stringify({
+                        boardSize: 5
+                    })
+                ],
+                type: db.QueryTypes.INSERT
+            });
+            
+            this.gameId = results;
+            logger.info(`Created new Tic Tac Toe game with ID: ${this.gameId}`);
+        } catch (error) {
+            logger.error(`Error creating Tic Tac Toe game record: ${error.message}`);
+        }
     }
 
     /**
@@ -140,21 +178,71 @@ class TicTacToe {
     /**
      * Save game results to database
      * @param {number} durationMs - Game duration in milliseconds
+     * @returns {Promise<number|null>} Game ID if successful, null otherwise
      */
     async saveGameResults(durationMs) {
-        if (!this.gameId) return;
+        if (!this.gameId) {
+            // Create a game record if none exists yet
+            await this.createGameRecord();
+            if (!this.gameId) return null;
+        }
 
         try {
+            const db = await getSequelize();
             let result = 'draw';
             if (this.winner === 'X') result = 'win';
             else if (this.winner === 'O') result = 'loss';
 
-            await db.query(
-                'UPDATE games SET result = ?, end_time = CURRENT_TIMESTAMP WHERE id = ?',
-                [result, this.gameId]
-            );
+            // Update the games table
+            await db.query(`
+                UPDATE games 
+                SET result = ?, 
+                    end_time = NOW(), 
+                    duration_seconds = ?, 
+                    status = 'completed' 
+                WHERE id = ?
+            `, {
+                replacements: [
+                    result, 
+                    Math.round(durationMs / 1000),
+                    this.gameId
+                ],
+                type: db.QueryTypes.UPDATE
+            });
+            
+            // Create tic_tac_toe specific record
+            await db.query(`
+                INSERT INTO tic_tac_toe 
+                (game_id, algorithm_type, move_time, move_number) 
+                VALUES (?, ?, ?, ?)
+            `, {
+                replacements: [
+                    this.gameId,
+                    'player', // Algorithm type is 'player' for human games
+                    durationMs / 1000, // Convert to seconds
+                    this.moveCount
+                ],
+                type: db.QueryTypes.INSERT
+            });
+            
+            // Track performance metrics
+            await trackAlgorithmPerformance({
+                gameId: this.gameId,
+                algorithmName: 'player',
+                executionTime: durationMs / 1000,
+                solutionFound: this.winner !== null,
+                iterations: this.moveCount,
+                parameters: {
+                    boardSize: 5,
+                    winner: this.winner || 'draw'
+                }
+            });
+            
+            logger.info(`Tic Tac Toe game results saved to database with ID: ${this.gameId}`);
+            return this.gameId;
         } catch (error) {
-            throw new Error(`Failed to save game results: ${error.message}`);
+            logger.error(`Error saving Tic Tac Toe game results: ${error.message}`);
+            return null;
         }
     }
 
@@ -226,11 +314,69 @@ class TicTacToe {
      */
     async makeAIMove(algorithm = 'minimax') {
         try {
+            const startTime = Date.now();
             const move = await this.getAIMove(algorithm);
+            const endTime = Date.now();
+            const executionTime = (endTime - startTime) / 1000;
+            
+            // Save algorithm performance metrics
+            await this.saveAlgorithmPerformance(algorithm, executionTime);
+            
             return this.makeMove(move.row, move.col);
         } catch (error) {
             logger.error(`Error making AI move: ${error.message}`);
             return false;
+        }
+    }
+    
+    /**
+     * Save algorithm performance metrics to database
+     * @param {string} algorithm - Algorithm name ('minimax' or 'mcts')
+     * @param {number} executionTime - Execution time in seconds
+     * @returns {Promise<void>}
+     */
+    async saveAlgorithmPerformance(algorithm, executionTime) {
+        if (!this.gameId) {
+            // Create a game record if none exists yet
+            await this.createGameRecord();
+            if (!this.gameId) return;
+        }
+        
+        try {
+            const db = await getSequelize();
+            
+            // Create tic_tac_toe specific record for algorithm
+            await db.query(`
+                INSERT INTO tic_tac_toe 
+                (game_id, algorithm_type, move_time, move_number) 
+                VALUES (?, ?, ?, ?)
+            `, {
+                replacements: [
+                    this.gameId,
+                    algorithm,
+                    executionTime,
+                    this.moveCount
+                ],
+                type: db.QueryTypes.INSERT
+            });
+            
+            // Track algorithm performance
+            await trackAlgorithmPerformance({
+                gameId: this.gameId,
+                algorithmName: algorithm,
+                executionTime: executionTime,
+                solutionFound: true,
+                iterations: 1, // One move
+                parameters: {
+                    boardSize: 5,
+                    moveNumber: this.moveCount,
+                    player: this.currentPlayer
+                }
+            });
+            
+            logger.info(`Tic Tac Toe ${algorithm} algorithm performance saved. Execution time: ${executionTime}s`);
+        } catch (error) {
+            logger.error(`Error saving algorithm performance: ${error.message}`);
         }
     }
 

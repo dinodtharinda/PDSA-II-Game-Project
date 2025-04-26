@@ -5,10 +5,12 @@
 
 import TicTacToe from '../game.js';
 import { debounce } from '../../../utils/timer.js';
+import logger from '../../../utils/logger.js';
 
 class TicTacToeUI {
-    constructor() {
-        this.game = new TicTacToe();
+    constructor(playerId = null) {
+        this.playerId = playerId;
+        this.game = new TicTacToe(playerId);
         this.algorithms = null;
         this.selectedAlgorithm = 'minimax'; // Default algorithm
         
@@ -16,10 +18,13 @@ class TicTacToeUI {
         this.boardElement = null;
         this.statusElement = null;
         this.resetButtonElement = null;
+        this.algorithmSelectElement = null;
+        this.metricsElement = null;
         
         // Bind event handlers
         this.handleCellClick = this.handleCellClick.bind(this);
         this.handleResetClick = this.handleResetClick.bind(this);
+        this.handleAlgorithmChange = this.handleAlgorithmChange.bind(this);
 
         // Add touch support and performance optimizations
         this.touchStartTime = 0;
@@ -81,6 +86,23 @@ class TicTacToeUI {
         this.resetButtonElement.className = 'btn btn-primary';
         this.resetButtonElement.addEventListener('click', this.handleResetClick);
         controlsElement.appendChild(this.resetButtonElement);
+
+        // Create algorithm select dropdown
+        this.algorithmSelectElement = document.createElement('select');
+        this.algorithmSelectElement.className = 'algorithm-select';
+        ['minimax', 'mcts'].forEach(algorithm => {
+            const option = document.createElement('option');
+            option.value = algorithm;
+            option.textContent = algorithm.charAt(0).toUpperCase() + algorithm.slice(1);
+            this.algorithmSelectElement.appendChild(option);
+        });
+        this.algorithmSelectElement.addEventListener('change', this.handleAlgorithmChange);
+        controlsElement.appendChild(this.algorithmSelectElement);
+
+        // Create metrics element
+        this.metricsElement = document.createElement('div');
+        this.metricsElement.className = 'game-metrics';
+        controlsElement.appendChild(this.metricsElement);
         
         // Add resize observer for responsive updates
         this.resizeObserver = new ResizeObserver(() => {
@@ -170,6 +192,14 @@ class TicTacToeUI {
     }
 
     /**
+     * Handle algorithm change event
+     */
+    handleAlgorithmChange(event) {
+        this.selectedAlgorithm = event.target.value;
+        logger.info(`Algorithm changed to: ${this.selectedAlgorithm}`);
+    }
+
+    /**
      * Make computer move using selected algorithm
      */
     async makeComputerMove() {
@@ -196,7 +226,12 @@ class TicTacToeUI {
                     move = this.algorithms.mcts.findBestMove(board);
                 }
                 const endTime = performance.now();
+                const executionTime = (endTime - startTime) / 1000; // Convert to seconds
 
+                // Save algorithm performance metrics before making the move
+                await this.game.saveAlgorithmPerformance(this.selectedAlgorithm, executionTime);
+                
+                // Make the move
                 this.game.makeMove(move.row, move.col);
                 this.render();
 
@@ -204,8 +239,39 @@ class TicTacToeUI {
                 const timeSpent = Math.round(endTime - startTime);
                 const currentStatus = this.statusElement.textContent;
                 this.statusElement.textContent = `${currentStatus} (took ${timeSpent}ms)`;
+
+                // Show detailed metrics
+                this.showPerformanceMetrics(this.selectedAlgorithm, timeSpent, this.game.gameId);
+                
+                logger.info(`Move made by ${this.selectedAlgorithm} in ${timeSpent}ms`);
             }, 100); // Small delay for better UX
         });
+    }
+
+    /**
+     * Show performance metrics for an algorithm
+     * @param {string} algorithm - Algorithm name
+     * @param {number} executionTime - Execution time in milliseconds
+     * @param {number} gameId - Game ID in database
+     */
+    showPerformanceMetrics(algorithm, executionTime, gameId) {
+        if (!this.metricsElement) return;
+        
+        this.metricsElement.innerHTML = `
+            <div class="metrics-title">Performance Metrics</div>
+            <div class="algorithm-metrics">
+                <span class="metrics-label">Algorithm:</span>
+                <span>${algorithm.charAt(0).toUpperCase() + algorithm.slice(1)}</span>
+            </div>
+            <div class="algorithm-metrics">
+                <span class="metrics-label">Execution Time:</span>
+                <span>${executionTime}ms</span>
+            </div>
+            ${gameId ? `<div class="algorithm-metrics">
+                <span class="metrics-label">Database Record ID:</span>
+                <span>${gameId}</span>
+            </div>` : ''}
+        `;
     }
 
     /**
