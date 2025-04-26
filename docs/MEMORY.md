@@ -16,7 +16,7 @@ Progress on game modules integration with the database for performance tracking:
 2. Game Modules Integration
    - ✅ Knight's Tour module fully integrated
    - ✅ Tower of Hanoi module fully integrated
-   - ⏳ Eight Queens module partially integrated
+   - ✅ Eight Queens module fully integrated
    - ⏳ Tic Tac Toe module partially integrated
    - ⏳ Traveling Salesman Problem module partially integrated
 
@@ -75,7 +75,7 @@ All project components have been successfully migrated to ES Module syntax:
 1. Database Integration Completion (Critical) ✓ IN PROGRESS
    - ✅ Finalize database models for storing game results
    - ✅ Update all game modules to use the async database methods 
-   - ⏳ Implement user performance tracking for each game
+   - ✅ Implement user performance tracking for each game
    - ⏳ Create utility functions for querying performance metrics
 
 2. End-to-End Testing (High Priority)

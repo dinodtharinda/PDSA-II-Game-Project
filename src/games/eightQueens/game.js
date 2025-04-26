@@ -7,6 +7,7 @@ import { getSequelize } from '../../config/db.js';
 import Timer from '../../utils/timer.js';
 import logger from '../../utils/logger.js';
 import validator from '../../utils/validator.js';
+import { trackAlgorithmPerformance } from '../../utils/performanceTracker.js';
 
 // Dynamic algorithm imports
 const algorithmModules = {
@@ -160,13 +161,13 @@ export class EightQueens {
         let executionTime;
         try {
             this.timer.stop();
-            executionTime = this.timer.getDurationInSeconds() * 1000; // Convert to milliseconds
+            executionTime = this.timer.getDurationInSeconds();
         } catch (error) {
             logger.error(`Error in endGame: ${error.message}`);
             executionTime = 0; // Fallback value
         }
         
-        logger.info(`Eight Queens puzzle completed in ${executionTime}ms`);
+        logger.info(`Eight Queens puzzle completed in ${executionTime * 1000}ms`);
         
         try {
             // Convert queens to string format for database
@@ -174,6 +175,7 @@ export class EightQueens {
                 EightQueens.coordinatesToPosition(queen.row, queen.col)
             ).join(',');
             
+            // Store solution in the eight_queens table
             const db = await getSequelize();
             await db.query(
                 `INSERT INTO eight_queens 
@@ -181,6 +183,20 @@ export class EightQueens {
                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [this.gameId, queensStr, 1, 'manual', executionTime, true]
             );
+            
+            // Track performance metrics
+            await trackAlgorithmPerformance({
+                gameId: this.gameId,
+                algorithmName: 'manual_solution',
+                executionTime: executionTime,
+                solutionFound: true,
+                iterations: this.queens.length,
+                solutionQuality: 'complete',
+                parameters: { 
+                    queensPlaced: this.queens.length,
+                    solution: queensStr
+                }
+            });
             
             return { score: 100 };
         } catch (error) {
@@ -238,10 +254,27 @@ export class EightQueens {
     /**
      * Fetch solutions from API
      * @param {string} algorithm - Algorithm to use ('sequential' or 'threaded')
+     * @param {Object} [options] - Algorithm options
+     * @param {number} [options.maxSolutions] - Maximum number of solutions to find (0 for all)
+     * @param {number} [options.threads] - Number of threads for threaded algorithm
      * @returns {Promise<Object>} Solutions object
      */
-    async getSolutions(algorithm = 'sequential') {
+    async getSolutions(algorithm = 'sequential', options = {}) {
         logger.info(`Fetching Eight Queens solutions with ${algorithm} algorithm`);
+        
+        // Create a game ID for tracking if not already created
+        if (!this.gameId) {
+            try {
+                const db = await getSequelize();
+                const result = await db.query(
+                    'INSERT INTO games (game_type, algorithm_used) VALUES (?, ?)',
+                    ['eightQueens', algorithm]
+                );
+                this.gameId = result.insertId;
+            } catch (error) {
+                logger.error(`Failed to create game record: ${error.message}`);
+            }
+        }
         
         try {
             // Dynamically import the requested algorithm
@@ -249,9 +282,53 @@ export class EightQueens {
             const algorithmFn = module.default || module.solve;
             
             if (typeof algorithmFn === 'function') {
+                // Prepare algorithm parameters
+                const algorithmOptions = {
+                    maxSolutions: options.maxSolutions || 0
+                };
+                
+                // Add thread count for threaded algorithm
+                if (algorithm === 'threaded' && options.threads) {
+                    algorithmOptions.threads = options.threads;
+                }
+                
                 const startTime = performance.now();
-                const solutions = await algorithmFn();
+                const solutions = await algorithmFn(algorithmOptions);
                 const executionTime = (performance.now() - startTime) / 1000;
+                
+                // Store solutions in database
+                try {
+                    const db = await getSequelize();
+                    
+                    // Store first solution as an example
+                    if (solutions && solutions.length > 0) {
+                        const firstSolution = solutions[0];
+                        const solutionStr = firstSolution.map((row, col) => 
+                            EightQueens.coordinatesToPosition(row, col)
+                        ).join(',');
+                        
+                        await db.query(
+                            `INSERT INTO eight_queens 
+                            (game_id, solution, solution_number, algorithm_type, execution_time, is_identified) 
+                            VALUES (?, ?, ?, ?, ?, ?)`,
+                            [this.gameId, solutionStr, 1, algorithm, executionTime, true]
+                        );
+                    }
+                    
+                    // Track algorithm performance
+                    await trackAlgorithmPerformance({
+                        gameId: this.gameId,
+                        algorithmName: algorithm,
+                        executionTime,
+                        solutionFound: solutions.length > 0,
+                        iterations: solutions.length,
+                        solutionQuality: solutions.length.toString(),
+                        parameters: algorithmOptions
+                    });
+                    
+                } catch (dbError) {
+                    logger.error(`Error storing solutions in database: ${dbError.message}`);
+                }
                 
                 return {
                     solutions,
@@ -260,6 +337,8 @@ export class EightQueens {
                     algorithm
                 };
             }
+            
+            logger.warn(`Algorithm function not found for ${algorithm}`);
             
             // Fallback mock implementation
             return {
