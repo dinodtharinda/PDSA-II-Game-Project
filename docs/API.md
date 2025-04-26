@@ -308,7 +308,7 @@ Validates if a move in Tower of Hanoi is legal.
 
 ### Solve Tower of Hanoi
 
-Solves the Tower of Hanoi puzzle with the specified algorithm.
+Solves the Tower of Hanoi puzzle with the specified algorithm and tracks performance metrics.
 
 - **URL**: `/api/games/tower-of-hanoi/solve`
 - **Method**: `POST`
@@ -332,13 +332,14 @@ Solves the Tower of Hanoi puzzle with the specified algorithm.
     ],
     "moves": 7,
     "executionTime": 0.001,
-    "algorithm": "recursive|iterative|frame-stewart"
+    "algorithm": "recursive|iterative|frame-stewart",
+    "gameId": 123
   }
   ```
 
 ### Recursive Algorithm Solution
 
-Solves the Tower of Hanoi using the recursive algorithm.
+Solves the Tower of Hanoi using the recursive algorithm and tracks performance metrics.
 
 - **URL**: `/api/games/tower-of-hanoi/solve/recursive`
 - **Method**: `POST`
@@ -353,7 +354,7 @@ Solves the Tower of Hanoi using the recursive algorithm.
 
 ### Iterative Algorithm Solution
 
-Solves the Tower of Hanoi using the iterative algorithm.
+Solves the Tower of Hanoi using the iterative algorithm and tracks performance metrics.
 
 - **URL**: `/api/games/tower-of-hanoi/solve/iterative`
 - **Method**: `POST`
@@ -368,7 +369,7 @@ Solves the Tower of Hanoi using the iterative algorithm.
 
 ### Frame-Stewart Algorithm Solution
 
-Solves the Tower of Hanoi using the Frame-Stewart algorithm for 4 pegs.
+Solves the Tower of Hanoi using the Frame-Stewart algorithm for 4 pegs and tracks performance metrics.
 
 - **URL**: `/api/games/tower-of-hanoi/solve/frame-stewart`
 - **Method**: `POST`
@@ -383,7 +384,7 @@ Solves the Tower of Hanoi using the Frame-Stewart algorithm for 4 pegs.
 
 ### Save Tower of Hanoi Game
 
-Saves the current state of a Tower of Hanoi game.
+Saves the current state of a Tower of Hanoi game and tracks player performance.
 
 - **URL**: `/api/games/tower-of-hanoi/save`
 - **Method**: `POST`
@@ -397,7 +398,7 @@ Saves the current state of a Tower of Hanoi game.
     "moves": 1
   }
   ```
-- **Response**: Saved game object with ID
+- **Response**: Saved game object with ID and performance metrics
 
 ### Get Tower of Hanoi Statistics
 
@@ -406,7 +407,19 @@ Retrieves statistics about Tower of Hanoi games.
 - **URL**: `/api/games/tower-of-hanoi/stats`
 - **Method**: `GET`
 - **Authentication**: Not required
-- **Response**: Statistics object
+- **Response**: 
+  ```json
+  {
+    "gameType": "towerOfHanoi",
+    "totalGames": 42,
+    "averageExecutionTime": 0.036,
+    "algorithmPerformance": [
+      {"algorithm": "recursive", "avgTime": 0.008},
+      {"algorithm": "iterative", "avgTime": 0.004},
+      {"algorithm": "frameStewart", "avgTime": 0.025}
+    ]
+  }
+  ```
 
 ## Eight Queens Puzzle
 

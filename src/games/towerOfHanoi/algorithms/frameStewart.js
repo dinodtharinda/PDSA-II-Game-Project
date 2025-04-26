@@ -8,6 +8,7 @@
 
 import Timer from '../../../utils/timer.js';
 import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
 
 /**
  * Solve the Tower of Hanoi puzzle using the Frame-Stewart algorithm for 4 pegs
@@ -111,4 +112,34 @@ function classicalTOH(numDisks, fromPeg, toPeg, auxPeg, moves) {
     classicalTOH(numDisks - 1, auxPeg, toPeg, fromPeg, moves);
 }
 
-export default { solve };
+/**
+ * Save performance metrics to database
+ * @param {Object} game - Game instance
+ * @param {string} algorithm - Algorithm name
+ * @param {Object} result - Algorithm result
+ * @returns {Promise<void>}
+ */
+export async function savePerformanceMetrics(game, algorithm, result) {
+    if (!game.gameId) return;
+  
+    try {
+        await trackAlgorithmPerformance({
+            gameId: game.gameId,
+            algorithmName: algorithm,
+            executionTime: result.executionTime,
+            solutionFound: result.success !== undefined ? result.success : true,
+            iterations: result.moves.length,
+            parameters: {
+                diskCount: game.diskCount,
+                pegCount: game.pegCount,
+                optimalK: getOptimalK(game.diskCount)
+            }
+        });
+        
+        logger.info(`Performance metrics saved for frameStewart algorithm`);
+    } catch (error) {
+        logger.error(`Failed to save performance metrics: ${error.message}`);
+    }
+}
+
+export default { solve, savePerformanceMetrics };

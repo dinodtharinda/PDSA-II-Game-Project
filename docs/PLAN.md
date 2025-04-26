@@ -179,117 +179,120 @@ This document outlines the development plan, milestones, and task distribution f
 
 ```
 PDSA-II-Game-Project/
-├── README.md            # Project overview
-├── package.json         # Node.js project configuration with ES Module support
-├── vite.config.js       # Vite configuration for bundling and development
-├── eslint.config.mjs    # ESLint configuration for ES Modules
+├── README.md                                   # Project overview
+├── package.json                                # Node.js project configuration with ES Module support
+├── package-lock.json                           # Dependency lock file
+├── .gitignore                                  # Git ignore file
 │
-├── public/              # Static public assets
-│   ├── css/             # Stylesheets
-│   ├── js/              # Client-side JavaScript
-│   └── images/          # Game images and icons
+├── public/                                     # Static public assets
+│   ├── css/                                    # Stylesheets
+│   └── images/                                 # Game images and icons
 │
-├── src/                 # Source code
-│   ├── server.js        # Express server setup (ES Modules)
-│   ├── config/          # Configuration files
-│   │   └── db.js        # Database connection configuration
+├── src/                                        # Source code
+│   ├── server.js                               # Express server setup (ES Modules)
+│   ├── config/                                 # Configuration files
+│   │   └── db.js                               # Database connection configuration
 │   │
-│   ├── models/          # Database models
-│   │   ├── player.js    # Player model
-│   │   ├── game.js      # Game model
-│   │   └── performance.js # Performance tracking model
+│   ├── models/                                 # Database models
+│   │   ├── game.js                             # Game model
+│   │   ├── index.js                            # Centralized model exports
+│   │   ├── performance.js                      # Performance tracking model
+│   │   └── player.js                           # Player model
 │   │
-│   ├── controllers/     # Route controllers
-│   │   ├── gameController.js # Main game controller
-│   │   └── statsController.js # Statistics controller
+│   ├── controllers/                            # Route controllers
+│   │   ├── gameController.js                   # Main game controller
+│   │   └── statsController.js                  # Statistics controller
 │   │
-│   ├── routes/          # Express routes
-│   │   ├── api.js       # API routes
-│   │   └── pages.js     # Page routes
+│   ├── routes/                                 # Express routes
+│   │   ├── api.js                              # API routes
+│   │   └── pages.js                            # Page routes
 │   │
-│   ├── utils/           # Utility functions
-│   │   ├── logger.js    # Logging utility
-│   │   ├── validator.js # Input validation
-│   │   └── timer.js     # Performance timer
+│   ├── utils/                                  # Utility functions
+│   │   ├── logger.js                           # Logging utility
+│   │   ├── performanceTracker.js               # Performance tracking utility
+│   │   ├── security.js                         # Security utilities (e.g., hashing, encryption)
+│   │   ├── timer.js                            # Performance timer
+│   │   └── validator.js                        # validation utility
 │   │
-│   ├── games/           # Game implementations
-│   │   ├── BaseGame.js  # Base game class with common functionality
-│   │   ├── ticTacToe/
-│   │   │   ├── ui/      # UI components
-│   │   │   │   └── index.js # Entry point
-│   │   │   ├── game.js  # Game logic
-│   │   │   └── algorithms/ # Different AI approaches
-│   │   │       ├── minimax.js
-│   │   │       └── mcts.js # Monte Carlo Tree Search
+│   ├── games/                                  # Game implementations
+│   │   ├── BaseGame.js                         # Base game class with common functionality
+│   │   ├── ticTacToe/                          # Tic-Tac-Toe game module
+│   │   │   ├── ui/                             # UI components
+│   │   │   │   └── index.js                    # Entry point
+│   │   │   ├── game.js                         # Game logic
+│   │   │   └── algorithms/                     # Different AI approaches
+│   │   │       ├── minimax.js                  # Minimax algorithm
+│   │   │       └── mcts.js                     # Monte Carlo Tree Search
 │   │   │
-│   │   ├── tsp/         # Traveling Salesman Problem
-│   │   │   ├── ui/      # UI components
-│   │   │   │   └── index.js # Entry point
-│   │   │   ├── game.js
-│   │   │   └── algorithms/
-│   │   │       ├── nearestNeighbor.js
-│   │   │       ├── dynamicProgramming.js
-│   │   │       └── geneticAlgorithm.js
+│   │   ├── tsp/                                # Traveling Salesman Problem
+│   │   │   ├── ui/                             # UI components
+│   │   │   │   └── index.js                    # Entry point
+│   │   │   ├── game.js                         # Game logic
+│   │   │   └── algorithms/                     # Different algorithm implementations
+│   │   │       ├── nearestNeighbor.js          # Nearest Neighbor algorithm
+│   │   │       ├── dynamicProgramming.js       # Dynamic Programming solution
+│   │   │       └── geneticAlgorithm.js         # Genetic Algorithm
 │   │   │
-│   │   ├── towerOfHanoi/
-│   │   │   ├── ui/      # UI components
-│   │   │   │   └── index.js # Entry point
-│   │   │   ├── game.js
-│   │   │   └── algorithms/
-│   │   │       ├── recursive.js
-│   │   │       ├── iterative.js
-│   │   │       └── frameStewart.js
+│   │   ├── towerOfHanoi/                       # Tower of Hanoi game module
+│   │   │   ├── ui/                             # UI components
+│   │   │   │   └── index.js                    # Entry point
+│   │   │   ├── game.js                         # Game logic
+│   │   │   └── algorithms/                     # Different algorithm implementations
+│   │   │       ├── recursive.js                # Recursive solution
+│   │   │       ├── iterative.js                # Iterative solution
+│   │   │       └── frameStewart.js             # Frame-Stewart algorithm
 │   │   │
-│   │   ├── eightQueens/
-│   │   │   ├── ui/      # UI components
-│   │   │   │   └── index.js # Entry point
-│   │   │   ├── game.js
-│   │   │   └── algorithms/
-│   │   │       ├── sequential.js
-│   │   │       └── threaded.js
+│   │   ├── eightQueens/                        # Eight Queens game module
+│   │   │   ├── ui/                             # UI components
+│   │   │   │   └── index.js                    # Entry point
+│   │   │   ├── game.js                         # Game logic
+│   │   │   └── algorithms/                     # Different algorithm implementations
+│   │   │       ├── sequential.js               # Sequential algorithm
+│   │   │       └── threaded.js                 # Threaded algorithm
 │   │   │
 │   │   └── knightsTour/
-│   │       ├── ui/      # UI components
-│   │       │   └── index.js # Entry point
-│   │       ├── game.js
-│   │       └── algorithms/
-│   │           ├── backtracking.js
-│   │           └── warnsdorff.js
+│   │       ├── ui/                             # UI components
+│   │       │   └── index.js                    # Entry point
+│   │       ├── game.js                         # Game logic
+│   │       └── algorithms/                     # Different algorithm implementations
+│   │           ├── backtracking.js             # Backtracking algorithm
+│   │           └── warnsdorff.js               # Warnsdorff's algorithm
 │   │
-│   └── middleware/      # Express middleware
-│       ├── auth.js      # Authentication middleware
-│       └── errorHandler.js # Error handling middleware
+│   └── middleware/                             # Express middleware
+│       ├── auth.js                             # Authentication middleware
+│       └── errorHandler.js                     # Error handling middleware
 │
-├── views/               # EJS templates
-│   ├── layouts/         # Page layouts
-│   ├── partials/        # Reusable template parts
-│   └── pages/           # Page templates
+├── views/                                      # EJS templates
+│   ├── layouts/                                # Page layouts
+│   ├── partials/                               # Reusable template parts
+│   └── pages/                                  # Page templates
 │
-├── scripts/             # Development and deployment scripts
-│   ├── seed.js          # Database seeding
-│   └── benchmarks.js    # Performance testing scripts
+├── scripts/                                    # Development and deployment scripts
+│   ├── seed.js                                 # Database seeding script
+│   └── benchmarks.js                           # Performance testing scripts
 │
-├── database/            # Database related files
-│   ├── migrations/      # Schema migrations
-│   └── game.db          # SQLite database file
+├── database/                                   # Database related files
+│   ├── migrations/                             # Schema migrations
+│   └── game.db                                 # SQLite database file
 │
-├── tests/               # Test files
-│   ├── setup.js         # Test setup
-│   ├── integration/     # Integration tests
-│   └── unit/            # Unit tests
+├── tests/                                      # Test files
+│   ├── setup.js                                # Test setup
+│   ├── integration/                            # Integration tests
+│   └── unit/                                   # Unit tests
 │
-└── docs/                # Documentation
-    ├── API.md           # API documentation
-    ├── PLAN.md          # Development plan and timeline
-    ├── PROGRESS.md      # Progress tracking document
-    ├── SCHEMA.md         # Database schema documentation
-    └── MEMORY.md        # Memory management and performance analysis
+└── docs/                                       # Documentation
+    ├── API.md                                  # API documentation
+    ├── PLAN.md                                 # Development plan and timeline
+    ├── PROGRESS.md                             # Progress tracking document
+    ├── SCHEMA.md                               # Database schema documentation
+    └── MEMORY.md                               # Memory management and performance analysis
 ```
+
 
 ## Team Responsibilities
 
 Thathsika - Game Module 1 (Knights Tour)
-Adithya - Game Module 1 (Tower of Hanoi, Knights Tour, Eight Queens)
-Dinod - Game Module 2 (Tic-Tac-Toe)
+Adithya - Game Module 1 (Tower of Hanoi, Knights Tour, Eight Queens, Traveling Salesman Problem)
+Dinod - Game Module 2 (Tic-Tac-Toe, Eight Queens)
 Sadew - Game Module 3 (Traveling Salesman Problem)
 Yasiru - Game Module 4 (Eight Queens)

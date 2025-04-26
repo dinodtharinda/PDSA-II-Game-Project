@@ -7,7 +7,8 @@
 
 import Timer from '../../utils/timer.js';
 import logger from '../../utils/logger.js';
-import db from '../../config/db.js';
+import { getSequelize } from '../../config/db.js';
+import { trackAlgorithmPerformance } from '../../utils/performanceTracker.js';
 
 // Dynamic algorithm imports
 const algorithmModules = {
@@ -152,29 +153,59 @@ export class TowerOfHanoi {
      */
     async saveGameResults(durationMs) {
         try {
-            const result = await db.query(
+            const sequelize = await getSequelize();
+            
+            // Create game record
+            const [result] = await sequelize.query(
                 'INSERT INTO games (game_type, end_time, result) VALUES (?, ?, ?) RETURNING id',
-                ['tower_of_hanoi', new Date(), this.moves === this.minMoves ? 'optimal' : 'completed']
+                {
+                    replacements: [
+                        'towerOfHanoi', 
+                        new Date(), 
+                        this.moves === this.minMoves ? 'optimal' : 'completed'
+                    ],
+                    type: sequelize.QueryTypes.INSERT
+                }
             );
             
-            const gameId = result.insertId;
-            await db.query(
+            const gameId = result[0].id;
+            
+            // Create tower_of_hanoi specific record
+            await sequelize.query(
                 `INSERT INTO tower_of_hanoi 
                 (game_id, disk_count, move_count, move_sequence, algorithm_type, execution_time) 
                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    gameId, 
-                    this.diskCount, 
-                    this.moves, 
-                    JSON.stringify(this.moveSequence),
-                    this.selectedAlgorithm,
-                    durationMs / 1000
-                ]
+                {
+                    replacements: [
+                        gameId, 
+                        this.diskCount, 
+                        this.moves, 
+                        JSON.stringify(this.moveSequence),
+                        this.selectedAlgorithm,
+                        durationMs / 1000
+                    ],
+                    type: sequelize.QueryTypes.INSERT
+                }
             );
             
+            // Track performance metrics
+            await trackAlgorithmPerformance({
+                gameId: gameId,
+                algorithmName: 'player',
+                executionTime: durationMs / 1000,
+                solutionFound: this.isGameWon(),
+                iterations: this.moves,
+                parameters: {
+                    diskCount: this.diskCount,
+                    pegCount: this.pegCount
+                }
+            });
+            
             logger.info('Tower of Hanoi game results saved to database');
+            return gameId;
         } catch (err) {
             logger.error(`Error saving Tower of Hanoi game results: ${err.message}`);
+            return null;
         }
     }
 
@@ -283,11 +314,61 @@ export class TowerOfHanoi {
             
             logger.info(`Solution found with ${moves.length} moves using ${this.selectedAlgorithm} algorithm in ${executionTime} seconds`);
             
+            // Create a database record for the solution and save performance metrics
+            const sequelize = await getSequelize();
+            const [result] = await sequelize.query(
+                'INSERT INTO games (game_type, status, algorithm_used, solution_found, execution_time) VALUES (?, ?, ?, ?, ?) RETURNING id',
+                {
+                    replacements: [
+                        'towerOfHanoi',
+                        'completed',
+                        this.selectedAlgorithm,
+                        true,
+                        executionTime
+                    ],
+                    type: sequelize.QueryTypes.INSERT
+                }
+            );
+            
+            const gameId = result[0].id;
+            
+            // Store the solution in tower_of_hanoi table
+            await sequelize.query(
+                `INSERT INTO tower_of_hanoi 
+                (game_id, disk_count, move_count, move_sequence, algorithm_type, execution_time) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                {
+                    replacements: [
+                        gameId,
+                        this.diskCount,
+                        moves.length,
+                        JSON.stringify(moves),
+                        this.selectedAlgorithm,
+                        executionTime
+                    ],
+                    type: sequelize.QueryTypes.INSERT
+                }
+            );
+            
+            // Track algorithm performance
+            await trackAlgorithmPerformance({
+                gameId: gameId,
+                algorithmName: this.selectedAlgorithm,
+                executionTime: executionTime,
+                solutionFound: true,
+                iterations: moves.length,
+                parameters: {
+                    diskCount: this.diskCount,
+                    pegCount: this.pegCount
+                }
+            });
+            
             return {
                 moves,
                 moveCount: moves.length,
                 executionTime,
-                algorithm: this.selectedAlgorithm
+                algorithm: this.selectedAlgorithm,
+                gameId: gameId
             };
         } catch (error) {
             logger.error(`Error generating solution: ${error.message}`);

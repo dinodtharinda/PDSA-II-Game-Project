@@ -21,6 +21,7 @@ export class TowerOfHanoiUI {
         this.diskCountSelectElement = null;
         this.solutionButtonElement = null;
         this.resetButtonElement = null;
+        this.metricsElement = null;
         
         // Bind event handlers
         this.handlePegClick = this.handlePegClick.bind(this);
@@ -195,12 +196,18 @@ export class TowerOfHanoiUI {
         this.messageElement = document.createElement('div');
         this.messageElement.className = 'message-area';
         
+        // Performance metrics container
+        this.metricsElement = document.createElement('div');
+        this.metricsElement.className = 'performance-metrics';
+        this.metricsElement.style.display = 'none';
+        
         // Add status elements to container
         statusContainer.appendChild(moveCountContainer);
         statusContainer.appendChild(this.messageElement);
         
         containerElement.appendChild(document.createElement('hr'));
         containerElement.appendChild(statusContainer);
+        containerElement.appendChild(this.metricsElement);
     }
 
     /**
@@ -320,13 +327,24 @@ export class TowerOfHanoiUI {
     /**
      * Handle solution button click event
      */
-    handleSolutionClick() {
+    async handleSolutionClick() {
         try {
+            this.solutionButtonElement.disabled = true;
+            this.showMessage('Finding solution...', 'info');
+            
             // Get solution
-            const solution = this.game.getSolution();
+            const solution = await this.game.getSolution();
             
             // Display solution info
             this.showMessage(`Solution found with ${solution.moveCount} moves in ${solution.executionTime.toFixed(3)} seconds using ${this.game.selectedAlgorithm} algorithm.`, 'info');
+            
+            // Show performance metrics
+            this.showPerformanceMetrics(
+                solution.algorithm, 
+                solution.moveCount, 
+                solution.executionTime,
+                solution.gameId
+            );
             
             // Reset game to animate solution
             this.game.reset();
@@ -337,6 +355,8 @@ export class TowerOfHanoiUI {
             this.animateSolution(solution.moves);
         } catch (error) {
             this.showMessage(`Error finding solution: ${error.message}`, 'error');
+        } finally {
+            this.solutionButtonElement.disabled = false;
         }
     }
 
@@ -403,6 +423,7 @@ export class TowerOfHanoiUI {
         this.game.reset();
         this.selectedPeg = null;
         this.clearMessage();
+        this.metricsElement.style.display = 'none';
         this.render();
     }
 
@@ -485,6 +506,51 @@ export class TowerOfHanoiUI {
     clearMessage() {
         this.messageElement.textContent = '';
         this.messageElement.className = 'message-area';
+    }
+
+    /**
+     * Show performance metrics
+     * @param {string} algorithm - Algorithm name
+     * @param {number} moves - Number of moves
+     * @param {number} time - Execution time in seconds
+     * @param {number} gameId - ID of the game in the database
+     */
+    showPerformanceMetrics(algorithm, moves, time, gameId) {
+        this.metricsElement.style.display = 'block';
+        
+        // Format algorithm name for display
+        let algorithmName = algorithm;
+        if (algorithm === 'recursive') {
+            algorithmName = 'Recursive';
+        } else if (algorithm === 'iterative') {
+            algorithmName = 'Iterative';
+        } else if (algorithm === 'frameStewart') {
+            algorithmName = 'Frame-Stewart';
+        }
+        
+        this.metricsElement.innerHTML = `
+            <div class="metrics-title">Performance Metrics</div>
+            <div class="algorithm-metrics">
+                <span class="metrics-label">Algorithm:</span>
+                <span>${algorithmName}</span>
+            </div>
+            <div class="algorithm-metrics">
+                <span class="metrics-label">Moves Required:</span>
+                <span>${moves}</span>
+            </div>
+            <div class="algorithm-metrics">
+                <span class="metrics-label">Execution Time:</span>
+                <span>${time.toFixed(3)} seconds</span>
+            </div>
+            <div class="algorithm-metrics">
+                <span class="metrics-label">Moves/Second:</span>
+                <span>${(moves / time).toFixed(2)}</span>
+            </div>
+            ${gameId ? `<div class="algorithm-metrics">
+                <span class="metrics-label">Database Record ID:</span>
+                <span>${gameId}</span>
+            </div>` : ''}
+        `;
     }
 }
 

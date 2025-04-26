@@ -1,4 +1,5 @@
 import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
 
 /**
  * Solve Tower of Hanoi recursively
@@ -74,7 +75,37 @@ export function validateSolution(moves, diskCount) {
     }
 }
 
+/**
+ * Save performance metrics to database
+ * @param {Object} game - Game instance
+ * @param {string} algorithm - Algorithm name
+ * @param {Object} result - Algorithm result
+ * @returns {Promise<void>}
+ */
+export async function savePerformanceMetrics(game, algorithm, result) {
+    if (!game.gameId) return;
+  
+    try {
+        await trackAlgorithmPerformance({
+            gameId: game.gameId,
+            algorithmName: algorithm,
+            executionTime: result.executionTime,
+            solutionFound: result.success !== undefined ? result.success : true,
+            iterations: result.moves.length,
+            parameters: {
+                diskCount: game.diskCount,
+                pegCount: game.pegCount
+            }
+        });
+        
+        logger.info(`Performance metrics saved for recursive algorithm`);
+    } catch (error) {
+        logger.error(`Failed to save performance metrics: ${error.message}`);
+    }
+}
+
 export default {
     solve: solveRecursive,
-    validate: validateSolution
+    validate: validateSolution,
+    savePerformanceMetrics
 };

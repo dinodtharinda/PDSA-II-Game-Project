@@ -18,7 +18,30 @@ CREATE TABLE games (
   end_time TIMESTAMP,
   player_id INTEGER,
   result TEXT,
+  algorithm_used TEXT,
+  solution_found BOOLEAN,
+  execution_time REAL,
+  status TEXT DEFAULT 'in_progress',
+  duration_seconds INTEGER,
+  settings JSON,
   FOREIGN KEY (player_id) REFERENCES players (id)
+);
+```
+
+### Performances Table
+```sql
+CREATE TABLE performances (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  game_id INTEGER NOT NULL,
+  algorithm_name TEXT NOT NULL,
+  execution_time REAL NOT NULL,
+  memory_used INTEGER,
+  iterations INTEGER,
+  solution_quality REAL,
+  parameters JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (game_id) REFERENCES games (id)
 );
 ```
 
