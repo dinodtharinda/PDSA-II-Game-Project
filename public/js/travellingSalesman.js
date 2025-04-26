@@ -1,6 +1,7 @@
 /**
- * TSP Game bundle for browser use
- * This file handles the browser-side implementation of the TSP game
+ * Traveling Salesman Problem client-side script
+ * This file handles the UI components for the TSP game
+ * The algorithms are now implemented on the server side for better performance
  */
 
 // Global TSP UI object
@@ -130,29 +131,59 @@ class TSPGame {
                this.selectedRoute[0] === this.homeCity;
     }
 
-    runAlgorithm(algorithmName, algorithm) {
-        const startTime = performance.now();
-        const result = algorithm(this.distanceMatrix, this.cities, this.cities.indexOf(this.homeCity));
-        const endTime = performance.now();
-        
-        const executionTime = endTime - startTime;
-        const route = result.route.map(index => this.cities[index]);
-        const distance = result.distance;
-        
-        this.algorithmResults[algorithmName] = {
-            route,
-            distance,
-            executionTime
-        };
-        
-        console.log(`Algorithm ${algorithmName} completed in ${executionTime.toFixed(2)}ms`);
-        
-        if (distance < this.optimalDistance) {
-            this.optimalRoute = route;
-            this.optimalDistance = distance;
+    /**
+     * Run algorithm on the server
+     * @param {string} algorithmName - Name of the algorithm to run
+     * @returns {Promise<Object>} - Promise resolving to the algorithm result
+     */
+    async runServerAlgorithm(algorithmName) {
+        try {
+            const response = await fetch('/api/games/traveling-salesman/solve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    algorithm: algorithmName,
+                    distanceMatrix: this.distanceMatrix,
+                    homeCity: this.cities.indexOf(this.homeCity)
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Server error');
+            }
+
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to solve the problem');
+            }
+
+            const executionTime = data.executionTime;
+            const route = data.route.map(index => this.cities[index]);
+            const distance = data.distance;
+
+            // Store the result
+            this.algorithmResults[algorithmName] = {
+                route,
+                distance,
+                executionTime
+            };
+            
+            console.log(`Algorithm ${algorithmName} completed in ${executionTime.toFixed(2)}ms`);
+            
+            // Update optimal route if better
+            if (distance < this.optimalDistance) {
+                this.optimalRoute = route;
+                this.optimalDistance = distance;
+            }
+            
+            return this.algorithmResults[algorithmName];
+        } catch (error) {
+            console.error(`Error running ${algorithmName} algorithm:`, error);
+            throw error;
         }
-        
-        return this.algorithmResults[algorithmName];
     }
 
     compareAlgorithms() {
@@ -448,121 +479,110 @@ class TSPUI {
         }
     }
 
-    runNearestNeighbor() {
+    async runNearestNeighbor() {
         if (this.solveInProgress) return;
         this.solveInProgress = true;
         
         this.showMessage('Running Nearest Neighbor algorithm...', 'info');
         
-        setTimeout(() => {
-            try {
-                const startTime = performance.now();
-                const result = this.game.runAlgorithm('NearestNeighbor', nearestNeighbor);
-                const endTime = performance.now();
+        try {
+            // Run algorithm on server
+            const result = await this.game.runServerAlgorithm('NearestNeighbor');
                 
-                // Draw the result route
-                this.drawCities();
-                this.drawAlgorithmRoute(result.route, '#007bff');
+            // Draw the result route
+            this.drawCities();
+            this.drawAlgorithmRoute(result.route, '#007bff');
                 
-                // Show result in the UI
-                this.displayAlgorithmResult('Nearest Neighbor', result);
+            // Show result in the UI
+            this.displayAlgorithmResult('Nearest Neighbor', result);
                 
-                this.showMessage('Nearest Neighbor algorithm completed!', 'success');
-            } catch (error) {
-                this.showMessage('Error running Nearest Neighbor algorithm: ' + error.message, 'error');
-            } finally {
-                this.solveInProgress = false;
-            }
-        }, 100);
+            this.showMessage('Nearest Neighbor algorithm completed!', 'success');
+        } catch (error) {
+            this.showMessage('Error running Nearest Neighbor algorithm: ' + error.message, 'error');
+        } finally {
+            this.solveInProgress = false;
+        }
     }
 
-    runDynamicProgramming() {
+    async runDynamicProgramming() {
         if (this.solveInProgress) return;
         this.solveInProgress = true;
         
         this.showMessage('Running Dynamic Programming algorithm (this may take a moment)...', 'info');
         
-        setTimeout(() => {
-            try {
-                const startTime = performance.now();
-                const result = this.game.runAlgorithm('DynamicProgramming', dynamicProgramming);
-                const endTime = performance.now();
+        try {
+            // Run algorithm on server
+            const result = await this.game.runServerAlgorithm('DynamicProgramming');
                 
-                // Draw the result route
-                this.drawCities();
-                this.drawAlgorithmRoute(result.route, '#dc3545');
+            // Draw the result route
+            this.drawCities();
+            this.drawAlgorithmRoute(result.route, '#dc3545');
                 
-                // Show result in the UI
-                this.displayAlgorithmResult('Dynamic Programming', result);
+            // Show result in the UI
+            this.displayAlgorithmResult('Dynamic Programming', result);
                 
-                this.showMessage('Dynamic Programming algorithm completed!', 'success');
-            } catch (error) {
-                this.showMessage('Error running Dynamic Programming algorithm: ' + error.message, 'error');
-            } finally {
-                this.solveInProgress = false;
-            }
-        }, 100);
+            this.showMessage('Dynamic Programming algorithm completed!', 'success');
+        } catch (error) {
+            this.showMessage('Error running Dynamic Programming algorithm: ' + error.message, 'error');
+        } finally {
+            this.solveInProgress = false;
+        }
     }
 
-    runGeneticAlgorithm() {
+    async runGeneticAlgorithm() {
         if (this.solveInProgress) return;
         this.solveInProgress = true;
         
         this.showMessage('Running Genetic Algorithm...', 'info');
         
-        setTimeout(() => {
-            try {
-                const startTime = performance.now();
-                const result = this.game.runAlgorithm('GeneticAlgorithm', geneticAlgorithm);
-                const endTime = performance.now();
+        try {
+            // Run algorithm on server
+            const result = await this.game.runServerAlgorithm('GeneticAlgorithm');
                 
-                // Draw the result route
-                this.drawCities();
-                this.drawAlgorithmRoute(result.route, '#28a745');
+            // Draw the result route
+            this.drawCities();
+            this.drawAlgorithmRoute(result.route, '#28a745');
                 
-                // Show result in the UI
-                this.displayAlgorithmResult('Genetic Algorithm', result);
+            // Show result in the UI
+            this.displayAlgorithmResult('Genetic Algorithm', result);
                 
-                this.showMessage('Genetic Algorithm completed!', 'success');
-            } catch (error) {
-                this.showMessage('Error running Genetic Algorithm: ' + error.message, 'error');
-            } finally {
-                this.solveInProgress = false;
-            }
-        }, 100);
+            this.showMessage('Genetic Algorithm completed!', 'success');
+        } catch (error) {
+            this.showMessage('Error running Genetic Algorithm: ' + error.message, 'error');
+        } finally {
+            this.solveInProgress = false;
+        }
     }
 
-    compareAlgorithms() {
+    async compareAlgorithms() {
         if (this.solveInProgress) return;
         this.solveInProgress = true;
         
         this.showMessage('Comparing all algorithms...', 'info');
         
-        setTimeout(() => {
-            try {
-                // Run all algorithms if not already run
-                if (!this.game.algorithmResults['NearestNeighbor']) {
-                    this.game.runAlgorithm('NearestNeighbor', nearestNeighbor);
-                }
-                
-                if (!this.game.algorithmResults['DynamicProgramming']) {
-                    this.game.runAlgorithm('DynamicProgramming', dynamicProgramming);
-                }
-                
-                if (!this.game.algorithmResults['GeneticAlgorithm']) {
-                    this.game.runAlgorithm('GeneticAlgorithm', geneticAlgorithm);
-                }
-                
-                // Display comparison results
-                this.displayAlgorithmComparison();
-                
-                this.showMessage('Algorithm comparison completed!', 'success');
-            } catch (error) {
-                this.showMessage('Error comparing algorithms: ' + error.message, 'error');
-            } finally {
-                this.solveInProgress = false;
+        try {
+            // Run all algorithms if not already run
+            if (!this.game.algorithmResults['NearestNeighbor']) {
+                await this.game.runServerAlgorithm('NearestNeighbor');
             }
-        }, 100);
+            
+            if (!this.game.algorithmResults['DynamicProgramming']) {
+                await this.game.runServerAlgorithm('DynamicProgramming');
+            }
+            
+            if (!this.game.algorithmResults['GeneticAlgorithm']) {
+                await this.game.runServerAlgorithm('GeneticAlgorithm');
+            }
+            
+            // Display comparison results
+            this.displayAlgorithmComparison();
+            
+            this.showMessage('Algorithm comparison completed!', 'success');
+        } catch (error) {
+            this.showMessage('Error comparing algorithms: ' + error.message, 'error');
+        } finally {
+            this.solveInProgress = false;
+        }
     }
 
     displayAlgorithmResult(name, result) {
@@ -694,424 +714,12 @@ class TSPUI {
     }
 }
 
-/**
- * Nearest Neighbor algorithm implementation for TSP
- */
-function nearestNeighbor(distanceMatrix, cities, startIndex) {
-    const n = distanceMatrix.length;
-    const visited = new Array(n).fill(false);
-    const route = [startIndex];
-    let totalDistance = 0;
-    let currentCity = startIndex;
-
-    visited[startIndex] = true;
-
-    // Visit n-1 more cities (all except starting city)
-    for (let i = 1; i < n; i++) {
-        let nearestCity = -1;
-        let shortestDistance = Infinity;
-
-        // Find nearest unvisited city
-        for (let j = 0; j < n; j++) {
-            if (!visited[j] && distanceMatrix[currentCity][j] < shortestDistance) {
-                nearestCity = j;
-                shortestDistance = distanceMatrix[currentCity][j];
-            }
-        }
-
-        if (nearestCity !== -1) {
-            visited[nearestCity] = true;
-            route.push(nearestCity);
-            totalDistance += shortestDistance;
-            currentCity = nearestCity;
-        }
-    }
-
-    // Return to start
-    totalDistance += distanceMatrix[currentCity][startIndex];
+// Initialize the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const tspUI = new TSPUI();
+    tspUI.init();
     
-    return {
-        route: route,
-        distance: totalDistance
-    };
-}
-
-/**
- * Dynamic Programming algorithm implementation for TSP (Held-Karp)
- */
-function dynamicProgramming(distanceMatrix, cities, startIndex) {
-    const n = distanceMatrix.length;
-    
-    // For small instances, use brute force
-    if (n <= 3) {
-        return bruteForce(distanceMatrix, startIndex);
-    }
-    
-    // Memoization storage
-    const dp = {};
-    const path = {};
-    
-    // Calculate minimum cost
-    const cost = solve(1 << startIndex, startIndex);
-    
-    // Reconstruct path
-    const route = reconstructPath(1 << startIndex, startIndex);
-    
-    return {
-        route: route,
-        distance: cost
-    };
-    
-    // Recursive function with memoization
-    function solve(mask, pos) {
-        // If all cities visited, return to start
-        if (mask === (1 << n) - 1) {
-            return distanceMatrix[pos][startIndex];
-        }
-        
-        // Check for memoized result
-        const key = `${mask},${pos}`;
-        if (dp[key] !== undefined) {
-            return dp[key];
-        }
-        
-        let ans = Infinity;
-        let bestNext = -1;
-        
-        // Try each unvisited city
-        for (let city = 0; city < n; city++) {
-            if ((mask & (1 << city)) === 0) { // If not visited
-                const newCost = distanceMatrix[pos][city] + solve(mask | (1 << city), city);
-                if (newCost < ans) {
-                    ans = newCost;
-                    bestNext = city;
-                }
-            }
-        }
-        
-        // Store the best path
-        path[key] = bestNext;
-        
-        // Memoize and return
-        return dp[key] = ans;
-    }
-    
-    // Reconstruct the path from memoization
-    function reconstructPath(mask, pos) {
-        const result = [startIndex];
-        let currentMask = mask;
-        let currentPos = pos;
-        
-        while (true) {
-            const key = `${currentMask},${currentPos}`;
-            const nextCity = path[key];
-            
-            if (nextCity === undefined || nextCity === -1) {
-                break;
-            }
-            
-            result.push(nextCity);
-            currentMask |= (1 << nextCity);
-            currentPos = nextCity;
-            
-            if (currentMask === (1 << n) - 1) {
-                break;
-            }
-        }
-        
-        return result;
-    }
-}
-
-/**
- * Brute force approach for very small TSP instances
- */
-function bruteForce(distanceMatrix, startIndex) {
-    const n = distanceMatrix.length;
-    const cities = Array.from({length: n}, (_, i) => i);
-    
-    // Create all permutations of cities (excluding start)
-    const otherCities = cities.filter(c => c !== startIndex);
-    const permutations = getPermutations(otherCities);
-    
-    let minDistance = Infinity;
-    let bestRoute = [];
-    
-    for (const perm of permutations) {
-        const route = [startIndex, ...perm];
-        
-        let distance = 0;
-        for (let i = 0; i < route.length - 1; i++) {
-            distance += distanceMatrix[route[i]][route[i + 1]];
-        }
-        
-        // Return to start
-        distance += distanceMatrix[route[route.length - 1]][startIndex];
-        
-        if (distance < minDistance) {
-            minDistance = distance;
-            bestRoute = route;
-        }
-    }
-    
-    return {
-        route: bestRoute,
-        distance: minDistance
-    };
-}
-
-/**
- * Generate all permutations of an array
- */
-function getPermutations(arr) {
-    if (arr.length <= 1) return [arr];
-    
-    const result = [];
-    for (let i = 0; i < arr.length; i++) {
-        const current = arr[i];
-        const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)];
-        const remainingPerms = getPermutations(remaining);
-        
-        for (const perm of remainingPerms) {
-            result.push([current, ...perm]);
-        }
-    }
-    
-    return result;
-}
-
-/**
- * Genetic Algorithm implementation for TSP
- */
-function geneticAlgorithm(distanceMatrix, cities, startIndex) {
-    const n = distanceMatrix.length;
-    
-    // Parameters based on problem size
-    const params = n <= 10 
-        ? { popSize: 50, generations: 100, mutationRate: 0.2, elitismRate: 0.1 }
-        : { popSize: 100, generations: 200, mutationRate: 0.1, elitismRate: 0.2 };
-    
-    return runGeneticAlgorithm(
-        distanceMatrix, 
-        startIndex, 
-        n, 
-        params.popSize, 
-        params.generations, 
-        params.mutationRate,
-        params.elitismRate
-    );
-}
-
-/**
- * Run the Genetic Algorithm with specified parameters
- */
-function runGeneticAlgorithm(distanceMatrix, startIndex, n, populationSize, generations, mutationRate, elitismRate) {
-    // Initialize population
-    let population = initializePopulation(n, startIndex, populationSize);
-    
-    // Evaluate initial population
-    let fitnessScores = population.map(individual => 
-        calculateFitness(individual, distanceMatrix, startIndex)
-    );
-    
-    // Track best solution
-    let bestIndividual = population[0];
-    let bestFitness = fitnessScores[0];
-    
-    for (let i = 0; i < fitnessScores.length; i++) {
-        if (fitnessScores[i] < bestFitness) {
-            bestFitness = fitnessScores[i];
-            bestIndividual = population[i];
-        }
-    }
-    
-    // Evolution loop
-    for (let generation = 0; generation < generations; generation++) {
-        // Create new generation
-        const eliteCount = Math.max(1, Math.floor(populationSize * elitismRate));
-        const newPopulation = [];
-        
-        // Add elite individuals
-        const sortedIndices = getSortedIndices(fitnessScores);
-        for (let i = 0; i < eliteCount; i++) {
-            newPopulation.push([...population[sortedIndices[i]]]);
-        }
-        
-        // Generate rest of population
-        while (newPopulation.length < populationSize) {
-            // Select parents
-            const parent1Index = tournamentSelection(fitnessScores, 3);
-            const parent2Index = tournamentSelection(fitnessScores, 3);
-            
-            // Crossover
-            const child = crossover(
-                population[parent1Index], 
-                population[parent2Index],
-                startIndex
-            );
-            
-            // Mutation
-            if (Math.random() < mutationRate) {
-                mutate(child, startIndex);
-            }
-            
-            newPopulation.push(child);
-        }
-        
-        // Replace old population
-        population = newPopulation;
-        
-        // Evaluate new population
-        fitnessScores = population.map(individual => 
-            calculateFitness(individual, distanceMatrix, startIndex)
-        );
-        
-        // Update best solution
-        for (let i = 0; i < fitnessScores.length; i++) {
-            if (fitnessScores[i] < bestFitness) {
-                bestFitness = fitnessScores[i];
-                bestIndividual = [...population[i]];
-            }
-        }
-    }
-    
-    return {
-        route: bestIndividual,
-        distance: bestFitness
-    };
-}
-
-/**
- * Initialize random population for genetic algorithm
- */
-function initializePopulation(n, startIndex, populationSize) {
-    const population = [];
-    
-    for (let i = 0; i < populationSize; i++) {
-        const tour = [startIndex];
-        
-        const remainingCities = [];
-        for (let j = 0; j < n; j++) {
-            if (j !== startIndex) {
-                remainingCities.push(j);
-            }
-        }
-        
-        // Fisher-Yates shuffle
-        for (let j = remainingCities.length - 1; j > 0; j--) {
-            const randomIndex = Math.floor(Math.random() * (j + 1));
-            [remainingCities[j], remainingCities[randomIndex]] = 
-            [remainingCities[randomIndex], remainingCities[j]];
-        }
-        
-        tour.push(...remainingCities);
-        population.push(tour);
-    }
-    
-    return population;
-}
-
-/**
- * Calculate fitness (route length) for genetic algorithm
- */
-function calculateFitness(individual, distanceMatrix, startIndex) {
-    let distance = 0;
-    
-    for (let i = 0; i < individual.length - 1; i++) {
-        distance += distanceMatrix[individual[i]][individual[i + 1]];
-    }
-    
-    // Return to start
-    distance += distanceMatrix[individual[individual.length - 1]][startIndex];
-    
-    return distance;
-}
-
-/**
- * Tournament selection for genetic algorithm
- */
-function tournamentSelection(fitnessScores, tournamentSize) {
-    const population = fitnessScores.length;
-    let bestIndex = Math.floor(Math.random() * population);
-    let bestFitness = fitnessScores[bestIndex];
-    
-    for (let i = 1; i < tournamentSize; i++) {
-        const candidateIndex = Math.floor(Math.random() * population);
-        const candidateFitness = fitnessScores[candidateIndex];
-        
-        if (candidateFitness < bestFitness) {
-            bestIndex = candidateIndex;
-            bestFitness = candidateFitness;
-        }
-    }
-    
-    return bestIndex;
-}
-
-/**
- * Ordered crossover for permutation problems (TSP)
- */
-function crossover(parent1, parent2, startIndex) {
-    const n = parent1.length;
-    
-    // Always keep startIndex at the beginning
-    const child = [startIndex];
-    
-    // Choose random segment from parent1
-    const startPos = 1 + Math.floor(Math.random() * (n - 2));
-    const endPos = 1 + startPos + Math.floor(Math.random() * (n - startPos));
-    
-    // Copy segment from parent1
-    for (let i = startPos; i < endPos; i++) {
-        child[i] = parent1[i];
-    }
-    
-    // Fill remaining positions from parent2
-    let j = 1;
-    
-    for (let i = 1; i < n; i++) {
-        const city = parent2[i];
-        
-        if (!child.includes(city)) {
-            // Find next unfilled position
-            while (j < n && child[j] !== undefined) {
-                j++;
-            }
-            
-            if (j < n) {
-                child[j] = city;
-            }
-        }
-    }
-    
-    return child;
-}
-
-/**
- * Mutation operator (swap mutation) for genetic algorithm
- */
-function mutate(individual, startIndex) {
-    const n = individual.length;
-    
-    // Select two random positions (excluding start city)
-    const pos1 = 1 + Math.floor(Math.random() * (n - 1));
-    let pos2 = 1 + Math.floor(Math.random() * (n - 1));
-    
-    // Make sure pos1 != pos2
-    while (pos1 === pos2) {
-        pos2 = 1 + Math.floor(Math.random() * (n - 1));
-    }
-    
-    // Swap cities
-    [individual[pos1], individual[pos2]] = [individual[pos2], individual[pos1]];
-    
-    return individual;
-}
-
-/**
- * Helper function to get indices sorted by fitness
- */
-function getSortedIndices(fitnessScores) {
-    return Array.from({ length: fitnessScores.length }, (_, i) => i)
-        .sort((a, b) => fitnessScores[a] - fitnessScores[b]);
-}
+    // Export for debugging
+    window.TSPGame = TSPGame;
+    window.TSPUI = tspUI;
+});

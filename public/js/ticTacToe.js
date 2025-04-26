@@ -1,6 +1,7 @@
 /**
  * Tic Tac Toe client-side script
- * This file bundles the game logic and UI components for the browser
+ * This file handles the UI components for the Tic-Tac-Toe game
+ * The algorithms are now implemented on the server side for better performance
  */
 
 // Game state and logic
@@ -117,6 +118,7 @@ class TicTacToeUI {
         
         // AI settings
         this.selectedAlgorithm = 'minimax';
+        this.isComputerThinking = false;
         
         // Bind event handlers
         this.handleCellClick = this.handleCellClick.bind(this);
@@ -183,7 +185,7 @@ class TicTacToeUI {
     }
 
     handleCellClick(row, col) {
-        if (this.game.currentPlayer === 'O' || !this.game.isGameActive) {
+        if (this.game.currentPlayer === 'O' || !this.game.isGameActive || this.isComputerThinking) {
             return;
         }
 
@@ -192,36 +194,73 @@ class TicTacToeUI {
             
             // If game is still active, make computer move
             if (this.game.isGameActive) {
+                this.isComputerThinking = true;
+                this.statusElement.textContent = "Computer is thinking...";
+                this.boardElement.classList.add('ai-thinking');
+                
                 setTimeout(() => this.makeComputerMove(), 500);
             }
         }
     }
 
-    makeComputerMove() {
-        const board = this.game.getGameState().board;
-        let move;
-
-        // Use selected algorithm
-        if (this.selectedAlgorithm === 'minimax') {
-            move = Minimax.findBestMove(board);
-        } else {
-            move = MCTS.findBestMove(board);
+    async makeComputerMove() {
+        try {
+            const board = this.game.getGameState().board;
+            
+            // Call server API to get AI move
+            const response = await fetch('/api/games/tic-tac-toe/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    board,
+                    algorithm: this.selectedAlgorithm
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Server error');
+            }
+            
+            const data = await response.json();
+            
+            // Apply the move from the server
+            if (data.success && data.move) {
+                this.game.makeMove(data.move.row, data.move.col);
+                
+                // Store algorithm performance data
+                this.lastMoveTime = data.executionTime;
+                this.lastAlgorithm = data.algorithm;
+            } else {
+                console.error('Invalid move received from server', data);
+            }
+        } catch (error) {
+            console.error('Error getting AI move:', error);
+            this.statusElement.textContent = "Error: Couldn't get computer move. Please try again.";
+        } finally {
+            this.isComputerThinking = false;
+            this.boardElement.classList.remove('ai-thinking');
+            this.render();
         }
-
-        this.game.makeMove(move.row, move.col);
-        this.render();
     }
 
     handleResetClick() {
+        if (this.isComputerThinking) return;
         this.game.reset();
+        this.lastMoveTime = null;
+        this.lastAlgorithm = null;
         this.render();
     }
 
     handleAlgorithmChange(event) {
         this.selectedAlgorithm = event.target.value;
-        if (this.game.isGameActive && this.game.currentPlayer === 'O') {
+        if (this.game.isGameActive && this.game.currentPlayer === 'O' && !this.isComputerThinking) {
             // If it's computer's turn, make a move with the new algorithm
-            this.makeComputerMove();
+            this.isComputerThinking = true;
+            this.statusElement.textContent = "Computer is thinking...";
+            this.boardElement.classList.add('ai-thinking');
+            setTimeout(() => this.makeComputerMove(), 500);
         }
     }
 
@@ -235,6 +274,9 @@ class TicTacToeUI {
         // Create board grid
         const boardGrid = document.createElement('div');
         boardGrid.className = 'tic-tac-toe-grid';
+        if (state.currentPlayer === 'X') {
+            boardGrid.classList.add('player-turn');
+        }
         
         // Create cells
         for (let i = 0; i < 5; i++) {
@@ -261,9 +303,12 @@ class TicTacToeUI {
                 : `Game Over - ${state.winner} Wins!`;
             
             // Add algorithm info if computer won
-            if (state.winner === 'O') {
-                statusMessage += ` (using ${this.selectedAlgorithm === 'minimax' ? 'Minimax' : 'MCTS'})`;
+            if (state.winner === 'O' && this.lastAlgorithm && this.lastMoveTime !== null) {
+                const algorithmName = this.lastAlgorithm === 'minimax' ? 'Minimax' : 'MCTS';
+                statusMessage += ` (using ${algorithmName}, ${(this.lastMoveTime * 1000).toFixed(2)}ms)`;
             }
+        } else if (this.isComputerThinking) {
+            statusMessage = "Computer is thinking...";
         } else {
             statusMessage = `Current Player: ${state.currentPlayer}`;
         }
@@ -271,6 +316,12 @@ class TicTacToeUI {
     }
 }
 
-// Export classes for global use
-window.TicTacToe = TicTacToe;
-window.TicTacToeUI = TicTacToeUI;
+// Initialize the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const ui = new TicTacToeUI();
+    ui.initialize();
+    
+    // Export for debugging
+    window.TicTacToe = TicTacToe;
+    window.TicTacToeUI = ui;
+});

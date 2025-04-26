@@ -166,13 +166,6 @@ class KnightsTour {
             validMoves: this.getValidMoves()
         };
     }
-    
-    async saveAlgorithmSolution(algorithm, solution, executionTime) {
-        // In client-side implementation, we don't save to DB
-        // This is a placeholder for compatibility with the server-side implementation
-        console.log(`Algorithm solution found in ${executionTime.toFixed(3)} seconds`);
-        return true;
-    }
 }
 
 // UI Component - Extended with our enhanced UI features
@@ -456,240 +449,49 @@ class KnightsTourUI {
             // Get current position
             const startPosition = this.game.startPosition;
             
-            // Solve with selected algorithm
-            const startTime = performance.now();
-            let solution;
+            // Call the server-side algorithm API
+            this.setMessage('Requesting solution from server...', 'message-info');
             
-            if (this.selectedAlgorithm === 'backtracking') {
-                solution = await this.solveWithBacktracking();
-            } else {
-                solution = await this.solveWithWarnsdorff();
+            const startTime = performance.now();
+            const response = await fetch('/api/games/knights-tour/solve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    startPosition,
+                    boardSize: this.game.size,
+                    algorithm: this.selectedAlgorithm
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to solve Knight\'s Tour');
             }
             
+            const result = await response.json();
             const endTime = performance.now();
-            const executionTime = (endTime - startTime) / 1000;
+            const clientTime = (endTime - startTime) / 1000; // Client-side time in seconds
             
             // Display solution if found
-            if (solution && solution.length > 0) {
-                await this.animateSolution(solution);
-                await this.game.saveAlgorithmSolution(this.selectedAlgorithm, solution, executionTime);
-                this.showPerformanceMetrics(this.selectedAlgorithm, solution.length, executionTime);
-                this.setMessage(`Solution found with ${this.selectedAlgorithm} algorithm!`, 'message-success');
+            if (result.solution && result.solution.length > 0) {
+                await this.animateSolution(result.solution);
+                
+                // Use server-reported execution time for metrics
+                this.showPerformanceMetrics(this.selectedAlgorithm, result.solution.length, result.executionTime);
+                this.setMessage(`Solution found with ${this.selectedAlgorithm} algorithm! (Server processed in ${result.executionTime.toFixed(3)}s)`, 'message-success');
             } else {
                 this.setMessage('No solution found!', 'message-error');
             }
         } catch (error) {
             console.error('Error solving Knight\'s Tour:', error);
-            this.setMessage('Error solving Knight\'s Tour', 'message-error');
+            this.setMessage(`Error solving Knight\'s Tour: ${error.message}`, 'message-error');
         } finally {
             this.isSolving = false;
             this.boardElement.classList.remove('solving');
             this.solveButtonElement.disabled = false;
         }
-    }
-    
-    async solveWithBacktracking() {
-        // Pure backtracking implementation for Knight's Tour
-        const board = [];
-        const size = this.game.size;
-        
-        // Knight's move patterns (8 possible moves)
-        const moveX = [2, 1, -1, -2, -2, -1, 1, 2];
-        const moveY = [1, 2, 2, 1, -1, -2, -2, -1];
-        
-        const startPos = { ...this.game.startPosition };
-        const solution = [startPos];
-        
-        // Track progress for user feedback
-        let attemptsCount = 0;
-        const startTime = Date.now();
-        
-        // Initialize board with -1 (unvisited)
-        for (let i = 0; i < size; i++) {
-            board[i] = new Array(size).fill(-1);
-        }
-        
-        // Mark start position as visited (move 0)
-        board[startPos.row][startPos.col] = 0;
-        
-        // Set up progress reporting
-        let progressInterval = setInterval(() => {
-            this.setMessage(`Pure backtracking in progress... (${attemptsCount.toLocaleString()} attempts, ${((Date.now() - startTime) / 1000).toFixed(1)}s)`, 'message-info');
-        }, 300);
-        
-        try {
-            // Start the recursive backtracking process
-            const found = await this.backtrackingSolve(
-                board, startPos.row, startPos.col, 1, size, moveX, moveY, solution, 
-                () => { attemptsCount++; }
-            );
-            
-            // Clear the progress interval
-            clearInterval(progressInterval);
-            
-            // Report the result
-            if (found) {
-                this.setMessage(`Solution found using pure backtracking after ${attemptsCount.toLocaleString()} attempts in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds!`, 'message-success');
-                return solution;
-            } else {
-                this.setMessage(`Backtracking could not find a solution after ${attemptsCount.toLocaleString()} attempts.`, 'message-warning');
-                return null;
-            }
-        } catch (error) {
-            clearInterval(progressInterval);
-            console.error("Error in backtracking:", error);
-            this.setMessage(`Error during backtracking search: ${error.message}`, 'message-error');
-            return null;
-        }
-    }
-    
-    async backtrackingSolve(board, x, y, moveCount, size, moveX, moveY, solution, progressCallback) {
-        // Periodically yield to the browser to prevent freezing
-        // Less frequent yields for better performance
-        if (moveCount % 8 === 0) {
-            await new Promise(resolve => setTimeout(resolve, 0));
-        }
-        
-        // Count this attempt
-        if (progressCallback) progressCallback();
-        
-        // Base case: all squares are visited
-        if (moveCount === size * size) {
-            return true; // Tour completed!
-        }
-        
-        // Try each possible knight move in order
-        for (let i = 0; i < 8; i++) {
-            const nextX = x + moveX[i];
-            const nextY = y + moveY[i];
-            
-            // Check if this is a valid move
-            if (this.isValidBacktrackingMove(nextX, nextY, board, size)) {
-                // Make the move
-                board[nextX][nextY] = moveCount;
-                solution.push({ row: nextX, col: nextY });
-                
-                // Recursively try to solve from this new position
-                if (await this.backtrackingSolve(board, nextX, nextY, moveCount + 1, size, moveX, moveY, solution, progressCallback)) {
-                    return true; // Solution found
-                }
-                
-                // Backtrack if no solution found from this position
-                board[nextX][nextY] = -1;
-                solution.pop();
-            }
-        }
-        
-        // No solution found from current position
-        return false;
-    }
-    
-    isValidBacktrackingMove(x, y, board, size) {
-        // A move is valid if:
-        // 1. It's within the board boundaries
-        // 2. The square has not been visited yet
-        return (
-            x >= 0 && y >= 0 && 
-            x < size && y < size && 
-            board[x][y] === -1
-        );
-    }
-    
-    async solveWithWarnsdorff() {
-        // Implementation of Warnsdorff's algorithm for client-side solver
-        const size = this.game.size;
-        const board = [];
-        const moveX = [2, 1, -1, -2, -2, -1, 1, 2];
-        const moveY = [1, 2, 2, 1, -1, -2, -2, -1];
-        const startPos = { ...this.game.startPosition };
-        const solution = [startPos];
-        
-        // Initialize board with zeros (unvisited)
-        for (let i = 0; i < size; i++) {
-            board[i] = new Array(size).fill(0);
-        }
-        
-        // Mark start position
-        board[startPos.row][startPos.col] = 1;
-        
-        // Current position
-        let currentRow = startPos.row;
-        let currentCol = startPos.col;
-        
-        // Warnsdorff's algorithm
-        for (let moveCount = 2; moveCount <= size * size; moveCount++) {
-            // For browser performance, break up long-running computation
-            if (moveCount % 20 === 0) {
-                await new Promise(resolve => setTimeout(resolve, 0));
-            }
-            
-            // Find next move using Warnsdorff's heuristic
-            const nextMove = this.findNextWarnsdorffMove(currentRow, currentCol, board, size, moveX, moveY);
-            
-            // If stuck, return null
-            if (!nextMove) {
-                return null;
-            }
-            
-            // Make the move
-            currentRow = nextMove.x;
-            currentCol = nextMove.y;
-            board[currentRow][currentCol] = moveCount;
-            solution.push({ row: currentRow, col: currentCol });
-        }
-        
-        return solution;
-    }
-    
-    findNextWarnsdorffMove(x, y, board, size, moveX, moveY) {
-        let minDegree = Infinity;
-        let minDegreeX = -1;
-        let minDegreeY = -1;
-        
-        // Try all possible moves
-        for (let i = 0; i < 8; i++) {
-            const nextX = x + moveX[i];
-            const nextY = y + moveY[i];
-            
-            if (this.isValidWarnsdorffMove(nextX, nextY, board, size)) {
-                const degree = this.countAccessibleSquares(nextX, nextY, board, size, moveX, moveY);
-                
-                if (degree < minDegree) {
-                    minDegree = degree;
-                    minDegreeX = nextX;
-                    minDegreeY = nextY;
-                }
-            }
-        }
-        
-        if (minDegreeX !== -1 && minDegreeY !== -1) {
-            return { x: minDegreeX, y: minDegreeY };
-        }
-        
-        return null;
-    }
-    
-    countAccessibleSquares(x, y, board, size, moveX, moveY) {
-        let count = 0;
-        
-        for (let i = 0; i < 8; i++) {
-            const nextX = x + moveX[i];
-            const nextY = y + moveY[i];
-            
-            if (this.isValidWarnsdorffMove(nextX, nextY, board, size)) {
-                count++;
-            }
-        }
-        
-        return count;
-    }
-    
-    isValidWarnsdorffMove(x, y, board, size) {
-        return (
-            x >= 0 && y >= 0 && 
-            x < size && y < size && 
-            board[x][y] === 0
-        );
     }
     
     animateSolution(solution) {

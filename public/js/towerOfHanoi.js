@@ -1,6 +1,7 @@
 /**
  * Tower of Hanoi game client-side script
- * This file bundles the game logic and UI components for the browser
+ * This file handles the UI components for the Tower of Hanoi game
+ * The algorithms are now implemented on the server side for better performance
  */
 
 // Game state and logic
@@ -202,303 +203,43 @@ class TowerOfHanoi {
     }
 
     /**
-     * Get the solution for the current configuration
-     * @returns {Array} - Array of moves to solve the puzzle
+     * Get the solution from server for the current configuration
+     * @returns {Promise<Object>} - Promise resolving to solution object
      */
-    getSolution() {
-        const startTime = performance.now();
-        
-        let solution;
-        if (this.selectedAlgorithm === 'recursive') {
-            solution = this.solveRecursive(this.diskCount, this.pegCount);
-        } else if (this.selectedAlgorithm === 'iterative') {
-            solution = this.solveIterative(this.diskCount, this.pegCount);
-        } else if (this.selectedAlgorithm === 'frameStewart') {
-            if (this.pegCount !== 4) {
-                throw new Error('Frame-Stewart algorithm requires 4 pegs');
+    async getSolution() {
+        try {
+            const response = await fetch('/api/games/tower-of-hanoi/solve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    diskCount: this.diskCount,
+                    pegCount: this.pegCount,
+                    algorithm: this.selectedAlgorithm
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Server error');
             }
-            solution = this.solveFrameStewart(this.diskCount);
-        }
-        
-        const executionTime = (performance.now() - startTime) / 1000;
-        
-        return {
-            moves: solution,
-            executionTime,
-            moveCount: solution.length
-        };
-    }
 
-    /**
-     * Solve the Tower of Hanoi puzzle using the recursive algorithm
-     * @param {number} diskCount - Number of disks
-     * @param {number} pegCount - Number of pegs (3 or 4)
-     * @returns {Array} - Array of moves to solve the puzzle
-     */
-    solveRecursive(diskCount, pegCount) {
-        // Validate inputs
-        if (diskCount < 1) {
-            throw new Error('Disk count must be at least 1');
-        }
-        
-        if (pegCount !== 3 && pegCount !== 4) {
-            throw new Error('Peg count must be either 3 or 4');
-        }
-        
-        // Initialize moves array
-        const moves = [];
-        
-        // Start recursion
-        if (pegCount === 3) {
-            // For 3 pegs, use the standard recursive algorithm
-            this.moveTower(diskCount, 0, 2, 1, moves);
-        } else if (pegCount === 4) {
-            // For 4 pegs, we still use recursion but less optimally than Frame-Stewart
-            // We use the first 3 pegs to move all but the last disk, then move the last disk
-            // to the 4th peg, then use the first 3 pegs to move the remaining disks to the 4th peg
-            this.moveTower(diskCount - 1, 0, 1, 2, moves);
-            moves.push({ from: 0, to: 3, disk: diskCount });
-            this.moveTower(diskCount - 1, 1, 3, 2, moves);
-        }
-        
-        return moves;
-    }
-
-    /**
-     * Recursive function to move a tower of disks from one peg to another
-     * @param {number} numDisks - Number of disks to move
-     * @param {number} fromPeg - Source peg index
-     * @param {number} toPeg - Destination peg index
-     * @param {number} auxPeg - Auxiliary peg index
-     * @param {Array} moves - Array to store the moves
-     */
-    moveTower(numDisks, fromPeg, toPeg, auxPeg, moves) {
-        if (numDisks === 1) {
-            // Base case: move a single disk
-            moves.push({ from: fromPeg, to: toPeg, disk: numDisks });
-            return;
-        }
-        
-        // Move n-1 disks from source to auxiliary peg
-        this.moveTower(numDisks - 1, fromPeg, auxPeg, toPeg, moves);
-        
-        // Move the nth disk from source to destination
-        moves.push({ from: fromPeg, to: toPeg, disk: numDisks });
-        
-        // Move n-1 disks from auxiliary to destination
-        this.moveTower(numDisks - 1, auxPeg, toPeg, fromPeg, moves);
-    }
-
-    /**
-     * Solve the Tower of Hanoi puzzle using an iterative algorithm
-     * @param {number} diskCount - Number of disks
-     * @param {number} pegCount - Number of pegs (3 or 4)
-     * @returns {Array} - Array of moves to solve the puzzle
-     */
-    solveIterative(diskCount, pegCount) {
-        // Validate inputs
-        if (diskCount < 1) {
-            throw new Error('Disk count must be at least 1');
-        }
-        
-        if (pegCount !== 3 && pegCount !== 4) {
-            throw new Error('Peg count must be either 3 or 4');
-        }
-        
-        // Initialize moves array
-        const moves = [];
-        
-        if (pegCount === 3) {
-            // For 3 pegs, use the standard iterative algorithm
-            this.solveThreePegsIterative(diskCount, moves);
-        } else {
-            // For 4 pegs, revert to a 3-peg approach (less optimal)
-            // Conceptually similar to the recursive approach for 4 pegs
-            const subTowerMoves = [];
-            this.solveThreePegsIterative(diskCount - 1, subTowerMoves);
+            const data = await response.json();
             
-            // Modify the moves to use different pegs
-            // First move n-1 disks from peg 0 to peg 1 using peg 2 as auxiliary
-            for (let move of subTowerMoves) {
-                moves.push(move);
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to get solution');
             }
             
-            // Move the largest disk to peg 3
-            moves.push({ from: 0, to: 3, disk: diskCount });
-            
-            // Now move the n-1 disks from peg 1 to peg 3 using peg 2 as auxiliary
-            for (let move of subTowerMoves) {
-                const newFrom = move.from === 0 ? 1 : (move.from === 1 ? 0 : move.from);
-                const newTo = move.to === 0 ? 1 : (move.to === 1 ? 3 : move.to);
-                moves.push({ from: newFrom, to: newTo, disk: move.disk });
-            }
+            return {
+                moves: data.moves,
+                executionTime: data.executionTime,
+                moveCount: data.moveCount,
+                algorithm: data.algorithm
+            };
+        } catch (error) {
+            console.error('Error getting solution:', error);
+            throw error;
         }
-        
-        return moves;
-    }
-
-    /**
-     * Solve the 3-peg Tower of Hanoi puzzle using an iterative algorithm
-     * @param {number} diskCount - Number of disks
-     * @param {Array} moves - Array to store the moves
-     */
-    solveThreePegsIterative(diskCount, moves) {
-        // The total number of moves required is 2^n - 1
-        const totalMoves = Math.pow(2, diskCount) - 1;
-        
-        // Create an array to represent the pegs and their disks
-        const pegs = [[], [], []];
-        
-        // Initialize the first peg with all disks
-        for (let i = diskCount; i >= 1; i--) {
-            pegs[0].push(i);
-        }
-        
-        // For odd disk counts, swap the order of the first move sequence
-        const isOddDiskCount = diskCount % 2 === 1;
-        
-        // Define the peg pairs for moves in the correct order
-        const pegPairs = isOddDiskCount 
-            ? [[0, 2], [0, 1], [1, 2]]  // Odd number of disks
-            : [[0, 1], [0, 2], [1, 2]]; // Even number of disks
-        
-        // Iterate through all moves
-        for (let moveIndex = 0; moveIndex < totalMoves; moveIndex++) {
-            // Determine which peg pair to use for this move
-            const pegPairIndex = moveIndex % 3;
-            const [fromPegCandidate1, fromPegCandidate2] = pegPairs[pegPairIndex];
-            
-            // Determine which peg has the smaller top disk (or which one has a disk)
-            let fromPeg, toPeg;
-            
-            if (pegs[fromPegCandidate1].length === 0) {
-                // First peg is empty, must move from second peg
-                fromPeg = fromPegCandidate2;
-                toPeg = fromPegCandidate1;
-            } else if (pegs[fromPegCandidate2].length === 0) {
-                // Second peg is empty, must move from first peg
-                fromPeg = fromPegCandidate1;
-                toPeg = fromPegCandidate2;
-            } else {
-                // Both pegs have disks, compare top disks
-                const topDisk1 = pegs[fromPegCandidate1][pegs[fromPegCandidate1].length - 1];
-                const topDisk2 = pegs[fromPegCandidate2][pegs[fromPegCandidate2].length - 1];
-                
-                if (topDisk1 < topDisk2) {
-                    // Top disk on first peg is smaller
-                    fromPeg = fromPegCandidate1;
-                    toPeg = fromPegCandidate2;
-                } else {
-                    // Top disk on second peg is smaller
-                    fromPeg = fromPegCandidate2;
-                    toPeg = fromPegCandidate1;
-                }
-            }
-            
-            // Make the move
-            const disk = pegs[fromPeg].pop();
-            pegs[toPeg].push(disk);
-            
-            // Record the move
-            moves.push({ from: fromPeg, to: toPeg, disk });
-        }
-    }
-
-    /**
-     * Solve the Tower of Hanoi puzzle using the Frame-Stewart algorithm for 4 pegs
-     * @param {number} diskCount - Number of disks
-     * @returns {Array} - Array of moves to solve the puzzle
-     */
-    solveFrameStewart(diskCount) {
-        // Validate inputs
-        if (diskCount < 1) {
-            throw new Error('Disk count must be at least 1');
-        }
-        
-        // Initialize moves array
-        const moves = [];
-        
-        // Calculate the optimal value of k (number of disks to move in the first stage)
-        // This is an approximation based on the Frame-Stewart algorithm
-        const k = this.getOptimalK(diskCount);
-        
-        // Start solution
-        this.frameStewart(diskCount, 0, 3, [1, 2], k, moves);
-        
-        return moves;
-    }
-
-    /**
-     * Calculate the optimal value of k for the Frame-Stewart algorithm
-     * @param {number} n - Number of disks
-     * @returns {number} - Optimal k value
-     */
-    getOptimalK(n) {
-        // A heuristic approach to find k such that: 2^(n-k) + 2^k - 2 is minimized
-        // For practical purposes, k ≈ sqrt(2n) works well
-        const k = Math.floor(Math.sqrt(2 * n));
-        return Math.max(1, k);
-    }
-
-    /**
-     * Recursive implementation of the Frame-Stewart algorithm
-     * @param {number} numDisks - Number of disks to move
-     * @param {number} fromPeg - Source peg index
-     * @param {number} toPeg - Destination peg index
-     * @param {Array} auxPegs - Array of auxiliary peg indices
-     * @param {number} k - Number of disks to move in first stage
-     * @param {Array} moves - Array to store the moves
-     */
-    frameStewart(numDisks, fromPeg, toPeg, auxPegs, k, moves) {
-        if (numDisks === 0) {
-            return;
-        }
-        
-        if (numDisks === 1) {
-            // Base case: move a single disk
-            moves.push({ from: fromPeg, to: toPeg, disk: numDisks });
-            return;
-        }
-        
-        if (k >= numDisks) {
-            // If k is greater than the number of disks, use the standard recursive solution
-            this.classicalTOH(numDisks, fromPeg, toPeg, auxPegs[0], moves);
-            return;
-        }
-        
-        // Step 1: Move the top n-k disks from source to first auxiliary peg
-        this.frameStewart(numDisks - k, fromPeg, auxPegs[0], [auxPegs[1], toPeg], this.getOptimalK(numDisks - k), moves);
-        
-        // Step 2: Move the remaining k disks from source to destination using the standard 3-peg algorithm
-        this.classicalTOH(k, fromPeg, toPeg, auxPegs[1], moves);
-        
-        // Step 3: Move the n-k disks from the first auxiliary peg to the destination
-        this.frameStewart(numDisks - k, auxPegs[0], toPeg, [fromPeg, auxPegs[1]], this.getOptimalK(numDisks - k), moves);
-    }
-
-    /**
-     * Classical recursive solution for the 3-peg Tower of Hanoi
-     * @param {number} numDisks - Number of disks to move
-     * @param {number} fromPeg - Source peg index
-     * @param {number} toPeg - Destination peg index
-     * @param {number} auxPeg - Auxiliary peg index
-     * @param {Array} moves - Array to store the moves
-     */
-    classicalTOH(numDisks, fromPeg, toPeg, auxPeg, moves) {
-        if (numDisks === 1) {
-            // Base case: move a single disk
-            moves.push({ from: fromPeg, to: toPeg, disk: 1 });
-            return;
-        }
-        
-        // Move n-1 disks from source to auxiliary peg
-        this.classicalTOH(numDisks - 1, fromPeg, auxPeg, toPeg, moves);
-        
-        // Move the nth disk from source to destination
-        moves.push({ from: fromPeg, to: toPeg, disk: numDisks });
-        
-        // Move n-1 disks from auxiliary to destination
-        this.classicalTOH(numDisks - 1, auxPeg, toPeg, fromPeg, moves);
     }
 
     /**
@@ -524,6 +265,7 @@ class TowerOfHanoiUI {
     constructor() {
         this.game = new TowerOfHanoi();
         this.selectedPeg = null;
+        this.isSolving = false;
         
         // DOM elements
         this.boardElement = null;
@@ -727,6 +469,11 @@ class TowerOfHanoiUI {
         const pegsContainer = document.createElement('div');
         pegsContainer.className = 'pegs-container';
         
+        // Add solving class if currently solving
+        if (this.isSolving) {
+            pegsContainer.classList.add('solving');
+        }
+        
         // Get game state
         const gameState = this.game.getGameState();
         
@@ -794,7 +541,7 @@ class TowerOfHanoiUI {
      * @param {number} pegIndex - Index of the clicked peg
      */
     handlePegClick(pegIndex) {
-        if (!this.game.isGameActive) {
+        if (!this.game.isGameActive || this.isSolving) {
             return;
         }
         
@@ -833,13 +580,21 @@ class TowerOfHanoiUI {
     /**
      * Handle solution button click event
      */
-    handleSolutionClick() {
+    async handleSolutionClick() {
+        if (this.isSolving) return;
+        
         try {
-            // Get solution
-            const solution = this.game.getSolution();
+            // Show solving state
+            this.isSolving = true;
+            this.disableControls();
+            this.showMessage('Calculating solution...', 'info');
+            this.render();
+            
+            // Get solution from server
+            const solution = await this.game.getSolution();
             
             // Display solution info
-            this.showMessage(`Solution found with ${solution.moveCount} moves in ${solution.executionTime.toFixed(3)} seconds using ${this.game.selectedAlgorithm} algorithm.`, 'info');
+            this.showMessage(`Solution found with ${solution.moveCount} moves in ${solution.executionTime.toFixed(3)} seconds using ${solution.algorithm} algorithm.`, 'info');
             
             // Reset game to animate solution
             this.game.reset();
@@ -850,6 +605,8 @@ class TowerOfHanoiUI {
             this.animateSolution(solution.moves);
         } catch (error) {
             this.showMessage(`Error finding solution: ${error.message}`, 'error');
+            this.isSolving = false;
+            this.enableControls();
         }
     }
 
@@ -858,15 +615,14 @@ class TowerOfHanoiUI {
      * @param {Array} moves - Array of moves to animate
      */
     animateSolution(moves) {
-        // Disable controls during animation
-        this.disableControls();
-        
         let moveIndex = 0;
         
         const animateNextMove = () => {
             if (moveIndex >= moves.length) {
                 // Animation complete
+                this.isSolving = false;
                 this.enableControls();
+                this.render();
                 return;
             }
             
@@ -913,6 +669,8 @@ class TowerOfHanoiUI {
      * Handle reset button click event
      */
     handleResetClick() {
+        if (this.isSolving) return;
+        
         this.game.reset();
         this.selectedPeg = null;
         this.clearMessage();
@@ -923,6 +681,8 @@ class TowerOfHanoiUI {
      * Handle algorithm change event
      */
     handleAlgorithmChange() {
+        if (this.isSolving) return;
+        
         try {
             const algorithm = this.algorithmSelectElement.value;
             this.game.setAlgorithm(algorithm);
@@ -945,6 +705,8 @@ class TowerOfHanoiUI {
      * Handle peg count change event
      */
     handlePegCountChange() {
+        if (this.isSolving) return;
+        
         try {
             const pegCount = parseInt(this.pegCountSelectElement.value, 10);
             this.game.setPegCount(pegCount);
@@ -969,6 +731,8 @@ class TowerOfHanoiUI {
      * Handle disk count change event
      */
     handleDiskCountChange() {
+        if (this.isSolving) return;
+        
         try {
             const diskCount = parseInt(this.diskCountSelectElement.value, 10);
             this.game.setDiskCount(diskCount);
@@ -1001,6 +765,12 @@ class TowerOfHanoiUI {
     }
 }
 
-// Export classes for global use
-window.TowerOfHanoi = TowerOfHanoi;
-window.TowerOfHanoiUI = TowerOfHanoiUI;
+// Initialize the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const ui = new TowerOfHanoiUI();
+    ui.initialize();
+    
+    // Export for debugging
+    window.TowerOfHanoi = TowerOfHanoi;
+    window.TowerOfHanoiUI = ui;
+});

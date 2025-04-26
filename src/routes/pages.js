@@ -15,7 +15,7 @@ router.get('/tic-tac-toe', (req, res) => {
 });
 
 router.get('/traveling-salesman', (req, res) => {
-  res.render('pages/traveling-salesman', { title: 'Traveling Salesman Problem', path: '/traveling-salesman' });
+  res.render('pages/travelingSalesman', { title: 'Traveling Salesman Problem', path: '/traveling-salesman' });
 });
 
 router.get('/tower-of-hanoi', (req, res) => {

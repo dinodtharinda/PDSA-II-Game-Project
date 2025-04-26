@@ -5,7 +5,7 @@
         <div class="col-md-12">
             <h1>Tic Tac Toe</h1>
             <p class="game-description">
-                Play against the computer on a 5×5 grid. Get four in a row horizontally, vertically, or diagonally to win!
+                Play against the computer on a 5x5 grid. Get four in a row horizontally, vertically, or diagonally to win!
             </p>
         </div>
     </div>
@@ -67,7 +67,7 @@
     
     function initTicTacToe() {
         const gameScript = document.createElement('script');
-        gameScript.src = '/js/ticTacToeBundle.js';
+        gameScript.src = '/js/ticTacToe.js';
         gameScript.onload = function() {
             if (typeof TicTacToeUI !== 'undefined') {
                 const gameUI = new TicTacToeUI();

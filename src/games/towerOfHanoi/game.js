@@ -6,7 +6,7 @@
  */
 
 const db = require('../../config/db');
-const timer = require('../../utils/timer');
+const Timer = require('../../utils/timer');
 const logger = require('../../utils/logger');
 const validator = require('../../utils/validator');
 const recursiveAlgorithm = require('./algorithms/recursive');
@@ -14,22 +14,29 @@ const iterativeAlgorithm = require('./algorithms/iterative');
 const frameStewartAlgorithm = require('./algorithms/frameStewart');
 
 class TowerOfHanoi {
-    constructor() {
-        // Initialize with default values
-        this.diskCount = this.getRandomDiskCount();
-        this.pegCount = 3; // Default to 3 pegs
-        this.reset();
+    /**
+     * Initialize a new Tower of Hanoi game
+     * @param {number} disks - Number of disks (default: random between 5-10)
+     * @param {number} pegCount - Number of pegs (3 or 4, default: 3)
+     */
+    constructor(disks = null, pegCount = 3) {
+        // Initialize with parameter values or defaults
+        this.disks = disks || this.getRandomDiskCount();
+        this.pegCount = pegCount; // Default to 3 pegs
         
         // Initialize performance tracking
-        this.timer = new timer.Timer();
-        this.moveCount = 0;
-        this.optimalMoveCount = 0;
+        this.timer = new Timer();
+        this.moves = 0;
+        this.minMoves = this.calculateMinimumMoves();
         
         // Algorithm selection
         this.selectedAlgorithm = 'recursive';
         
         // Game state
         this.isGameActive = false;
+        
+        // Initialize pegs
+        this.reset();
     }
 
     /**
@@ -40,19 +47,16 @@ class TowerOfHanoi {
         this.pegs = Array(this.pegCount).fill().map(() => []);
         
         // Initialize the first peg with all disks in descending order (largest at bottom)
-        for (let i = this.diskCount; i >= 1; i--) {
+        for (let i = this.disks; i >= 1; i--) {
             this.pegs[0].push(i);
         }
         
-        this.moveCount = 0;
+        this.moves = 0;
         this.moveSequence = [];
         this.isGameActive = true;
         this.startTime = new Date();
         
-        // Calculate optimal move count based on algorithm and peg count
-        this.calculateOptimalMoveCount();
-        
-        logger.info(`Tower of Hanoi game reset with ${this.diskCount} disks and ${this.pegCount} pegs`);
+        logger.info(`Tower of Hanoi game reset with ${this.disks} disks and ${this.pegCount} pegs`);
     }
 
     /**
@@ -67,10 +71,11 @@ class TowerOfHanoi {
      * @param {number} count - Number of disks (5-10)
      */
     setDiskCount(count) {
-        if (count < 5 || count > 10) {
-            throw new Error('Disk count must be between 5 and 10');
+        if (count < 1 || count > 10) {
+            throw new Error('Disk count must be between 1 and 10');
         }
-        this.diskCount = count;
+        this.disks = count;
+        this.minMoves = this.calculateMinimumMoves();
         this.reset();
     }
 
@@ -83,6 +88,7 @@ class TowerOfHanoi {
             throw new Error('Peg count must be either 3 or 4');
         }
         this.pegCount = count;
+        this.minMoves = this.calculateMinimumMoves();
         this.reset();
     }
 
@@ -91,38 +97,32 @@ class TowerOfHanoi {
      * @param {string} algorithm - Algorithm name ('recursive', 'iterative', or 'frameStewart')
      */
     setAlgorithm(algorithm) {
-        const validAlgorithms = ['recursive', 'iterative', 'frameStewart'];
+        const validAlgorithms = ['recursive', 'iterative', 'frame-stewart'];
         if (!validAlgorithms.includes(algorithm)) {
             throw new Error(`Invalid algorithm. Must be one of: ${validAlgorithms.join(', ')}`);
         }
         
         // Frame-Stewart only works with 4 pegs
-        if (algorithm === 'frameStewart' && this.pegCount !== 4) {
+        if (algorithm === 'frame-stewart' && this.pegCount !== 4) {
             throw new Error('Frame-Stewart algorithm requires 4 pegs');
         }
         
         this.selectedAlgorithm = algorithm;
-        this.calculateOptimalMoveCount();
     }
 
     /**
-     * Calculate the optimal move count based on algorithm and peg configuration
+     * Calculate the minimum number of moves required to solve the puzzle
+     * @returns {number} The minimum number of moves
      */
-    calculateOptimalMoveCount() {
+    calculateMinimumMoves() {
         if (this.pegCount === 3) {
             // For 3 pegs, optimal solution is always 2^n - 1 moves
-            this.optimalMoveCount = Math.pow(2, this.diskCount) - 1;
+            return Math.pow(2, this.disks) - 1;
         } else if (this.pegCount === 4) {
-            if (this.selectedAlgorithm === 'frameStewart') {
-                // For 4 pegs with Frame-Stewart algorithm, calculations are more complex
-                // This is an approximation based on the algorithm
-                const k = Math.floor(Math.sqrt(2 * this.diskCount));
-                let moveCount = Math.pow(2, this.diskCount - k) - 1 + 2 * Math.pow(2, k) - 1;
-                this.optimalMoveCount = moveCount;
-            } else {
-                // Default to 3-peg algorithm optimal count for comparison
-                this.optimalMoveCount = Math.pow(2, this.diskCount) - 1;
-            }
+            // For 4 pegs, calculations are more complex (Frame-Stewart algorithm)
+            // This is an approximation based on the algorithm
+            const k = Math.floor(Math.sqrt(2 * this.disks));
+            return Math.pow(2, this.disks - k) - 1 + 2 * Math.pow(2, k) - 1;
         }
     }
 
@@ -132,9 +132,9 @@ class TowerOfHanoi {
      * @param {number} toPeg - Destination peg index (0-based)
      * @returns {boolean} - Whether the move was valid and executed
      */
-    moveDisk(fromPeg, toPeg) {
+    makeMove(fromPeg, toPeg) {
         // Validate move
-        if (!this.isValidMove(fromPeg, toPeg)) {
+        if (!this.isMoveLegal(fromPeg, toPeg)) {
             return false;
         }
         
@@ -143,11 +143,11 @@ class TowerOfHanoi {
         this.pegs[toPeg].push(disk);
         
         // Record move
-        this.moveCount++;
+        this.moves++;
         this.moveSequence.push({ from: fromPeg, to: toPeg, disk });
         
         // Check if game is complete
-        if (this.isGameComplete()) {
+        if (this.isGameWon()) {
             this.endGame();
         }
         
@@ -160,7 +160,7 @@ class TowerOfHanoi {
      * @param {number} toPeg - Destination peg index (0-based)
      * @returns {boolean} - Whether the move is valid
      */
-    isValidMove(fromPeg, toPeg) {
+    isMoveLegal(fromPeg, toPeg) {
         // Check if pegs are in range
         if (fromPeg < 0 || fromPeg >= this.pegCount || toPeg < 0 || toPeg >= this.pegCount) {
             return false;
@@ -187,8 +187,9 @@ class TowerOfHanoi {
      * Check if the game is complete (all disks moved to the last peg)
      * @returns {boolean} - Whether the game is complete
      */
-    isGameComplete() {
-        return this.pegs[this.pegCount - 1].length === this.diskCount;
+    isGameWon() {
+        // Game is won when the last peg has all disks
+        return this.pegs[this.pegCount - 1].length === this.disks;
     }
 
     /**
@@ -199,7 +200,7 @@ class TowerOfHanoi {
         const endTime = new Date();
         const durationMs = endTime - this.startTime;
         
-        logger.info(`Tower of Hanoi game completed in ${this.moveCount} moves (optimal: ${this.optimalMoveCount})`);
+        logger.info(`Tower of Hanoi game completed in ${this.moves} moves (optimal: ${this.minMoves})`);
         
         // Save game results to database
         this.saveGameResults(durationMs);
@@ -212,23 +213,27 @@ class TowerOfHanoi {
     async saveGameResults(durationMs) {
         try {
             // First create game entry
-            const game = await db('games').insert({
-                game_type: 'tower_of_hanoi',
-                end_time: new Date(),
-                result: this.moveCount === this.optimalMoveCount ? 'optimal' : 'completed'
-            }).returning('id');
+            const result = await db.query(
+                'INSERT INTO games (game_type, end_time, result) VALUES (?, ?, ?) RETURNING id',
+                ['tower_of_hanoi', new Date(), this.moves === this.minMoves ? 'optimal' : 'completed']
+            );
             
-            const gameId = game[0];
+            const gameId = result.insertId;
             
             // Then save tower of hanoi specific data
-            await db('tower_of_hanoi').insert({
-                game_id: gameId,
-                disk_count: this.diskCount,
-                move_count: this.moveCount,
-                move_sequence: JSON.stringify(this.moveSequence),
-                algorithm_type: this.selectedAlgorithm,
-                execution_time: durationMs / 1000 // Convert to seconds
-            });
+            await db.query(
+                `INSERT INTO tower_of_hanoi 
+                (game_id, disk_count, move_count, move_sequence, algorithm_type, execution_time) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    gameId, 
+                    this.disks, 
+                    this.moves, 
+                    JSON.stringify(this.moveSequence), 
+                    this.selectedAlgorithm, 
+                    durationMs / 1000 // Convert to seconds
+                ]
+            );
             
             logger.info(`Tower of Hanoi game results saved to database`);
         } catch (err) {
@@ -237,31 +242,50 @@ class TowerOfHanoi {
     }
 
     /**
-     * Get the solution for the current configuration
-     * @returns {Array} - Array of moves to solve the puzzle
+     * Get the solution from the server API
+     * @param {string} algorithm - The algorithm to use ('recursive', 'iterative', 'frame-stewart')
+     * @returns {Promise<Object>} - Promise resolving to the solution
      */
-    getSolution() {
-        this.timer.start();
-        
-        let solution;
-        if (this.selectedAlgorithm === 'recursive') {
-            solution = recursiveAlgorithm.solve(this.diskCount, this.pegCount);
-        } else if (this.selectedAlgorithm === 'iterative') {
-            solution = iterativeAlgorithm.solve(this.diskCount, this.pegCount);
-        } else if (this.selectedAlgorithm === 'frameStewart') {
-            if (this.pegCount !== 4) {
-                throw new Error('Frame-Stewart algorithm requires 4 pegs');
+    async getSolution(algorithm = 'recursive') {
+        try {
+            const url = `/api/games/tower-of-hanoi/solve/${algorithm}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    disks: this.disks
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Failed to get solution: ${errorData.error || 'Unknown error'}`);
             }
-            solution = frameStewartAlgorithm.solve(this.diskCount);
+            
+            return await response.json();
+        } catch (error) {
+            logger.error(`Error getting solution: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Apply a solution to the game
+     * @param {Array<Object>} solution - Array of move objects
+     */
+    applySolution(solution) {
+        // Reset game first
+        this.reset();
+        
+        // Apply each move in the solution
+        for (const move of solution) {
+            this.makeMove(move.from, move.to);
         }
         
-        const executionTime = this.timer.stop();
-        
-        return {
-            moves: solution,
-            executionTime,
-            moveCount: solution.length
-        };
+        return this.getGameState();
     }
 
     /**
@@ -270,14 +294,11 @@ class TowerOfHanoi {
      */
     getGameState() {
         return {
-            diskCount: this.diskCount,
-            pegCount: this.pegCount,
+            disks: this.disks,
             pegs: this.pegs.map(peg => [...peg]), // Create deep copy
-            moveCount: this.moveCount,
-            optimalMoveCount: this.optimalMoveCount,
-            isGameComplete: this.isGameComplete(),
-            isGameActive: this.isGameActive,
-            selectedAlgorithm: this.selectedAlgorithm
+            moves: this.moves,
+            minMoves: this.minMoves,
+            isWon: this.isGameWon()
         };
     }
 }

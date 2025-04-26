@@ -59,7 +59,9 @@ class KnightsTour {
         this.moveSequence.push({ row: startPos.row, col: startPos.col });
         
         // Create game record in database
-        await this.createGameRecord(playerId);
+        if (playerId) {
+            await this.createGameRecord(playerId);
+        }
         
         return this.startPosition;
     }
@@ -122,6 +124,13 @@ class KnightsTour {
         }
         
         if (!this.isValidMove(row, col)) {
+            // Even if this specific move is invalid, check if the knight is trapped
+            // and has no valid moves left
+            if (this.getValidMoves().length === 0) {
+                this.isGameActive = false;
+                logger.info('Knight is trapped! No valid moves available.');
+                return false;
+            }
             return false;
         }
         
@@ -141,7 +150,7 @@ class KnightsTour {
         // Check if the knight is trapped (no more valid moves)
         if (this.getValidMoves().length === 0) {
             this.isGameActive = false;
-            return true;
+            logger.info('Knight is trapped! No valid moves available.');
         }
         
         return true;
@@ -152,6 +161,8 @@ class KnightsTour {
      * @returns {Array} Array of valid moves {row, col}
      */
     getValidMoves() {
+        if (!this.currentPosition) return [];
+        
         const moves = [];
         const knightMoves = [
             { rowDiff: -2, colDiff: -1 },
@@ -307,8 +318,8 @@ class KnightsTour {
     getGameState() {
         return {
             board: this.board.map(row => [...row]),
-            currentPosition: { ...this.currentPosition },
-            startPosition: { ...this.startPosition },
+            currentPosition: this.currentPosition ? { ...this.currentPosition } : null,
+            startPosition: this.startPosition ? { ...this.startPosition } : null,
             moveCount: this.moveSequence.length,
             movesHistory: [...this.moveSequence],
             isGameActive: this.isGameActive,
