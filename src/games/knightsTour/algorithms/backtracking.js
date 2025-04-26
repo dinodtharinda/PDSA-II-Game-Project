@@ -1,44 +1,109 @@
 import logger from '../../../utils/logger.js';
+import { trackAlgorithmPerformance } from '../../../utils/performanceTracker.js';
 
+// Define knight's possible moves (L-shape)
 const knightMoves = [
   [-2, -1], [-2, 1], [-1, -2], [-1, 2],
   [1, -2], [1, 2], [2, -1], [2, 1]
 ];
 
-export function solveTourBacktracking(board, startPos) {
-  const size = board.length;
-  const visited = Array(size).fill().map(() => Array(size).fill(false));
-  const solution = [startPos];
-  visited[startPos.row][startPos.col] = true;
-
-  if (findTour(startPos.row, startPos.col, 1, visited, solution, size)) {
-    return solution;
-  }
-  return [];
+// Check if a position is valid and unvisited
+function isValidPosition(row, col, visited, size) {
+  return (
+    row >= 0 && row < size && 
+    col >= 0 && col < size && 
+    visited[row][col] === 0
+  );
 }
 
-function findTour(row, col, moveCount, visited, solution, size) {
-  if (moveCount === size * size) {
+/**
+ * Find a knight's tour using backtracking
+ * @param {Object} options - Algorithm options
+ * @param {Object} options.startPosition - Starting position {row, col}
+ * @param {number} options.boardSize - Size of the board (e.g., 8 for 8x8)
+ * @returns {Promise<Object>} - Algorithm result
+ */
+export default async function findKnightsTour(options) {
+  const startTime = performance.now();
+  const { startPosition, boardSize } = options;
+  
+  // Initialize the board with zeros (unvisited)
+  const visited = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+  const tour = [];
+  
+  // Set the starting position
+  const { row, col } = startPosition;
+  visited[row][col] = 1;
+  tour.push({ row, col });
+  
+  // Backtracking algorithm
+  const found = await solveKnightsTour(row, col, 2, visited, tour, boardSize);
+  
+  const endTime = performance.now();
+  const executionTime = (endTime - startTime) / 1000; // Convert to seconds
+  
+  logger.info(`Backtracking algorithm ${found ? 'found' : 'could not find'} solution in ${executionTime.toFixed(3)} seconds`);
+  
+  return {
+    algorithm: 'backtracking',
+    success: found,
+    executionTime,
+    iterations: tour.length,
+    solution: found ? tour : [],
+    boardSize
+  };
+}
+
+/**
+ * Recursive backtracking function to solve knight's tour
+ * @param {number} row - Current row position
+ * @param {number} col - Current column position
+ * @param {number} moveNum - Current move number
+ * @param {Array<Array<number>>} visited - Board with visited positions
+ * @param {Array<Object>} tour - Current tour path
+ * @param {number} size - Board size
+ * @returns {boolean} True if tour is found
+ */
+async function solveKnightsTour(row, col, moveNum, visited, tour, size) {
+  // Base case: if all squares are visited
+  if (moveNum > size * size) {
     return true;
   }
-
-  const nextMoves = getValidMoves(row, col, visited, size);
-  for (const move of nextMoves) {
-    visited[move.row][move.col] = true;
-    solution.push(move);
-
-    if (findTour(move.row, move.col, moveCount + 1, visited, solution, size)) {
-      return true;
+  
+  // Try all possible moves from current position
+  for (const [rowDiff, colDiff] of getOrderedMoves(row, col, visited, size)) {
+    const newRow = row + rowDiff;
+    const newCol = col + colDiff;
+    
+    // If this is a valid unvisited square
+    if (isValidPosition(newRow, newCol, visited, size)) {
+      // Mark as visited
+      visited[newRow][newCol] = moveNum;
+      tour.push({ row: newRow, col: newCol });
+      
+      // Recursively try this path
+      if (await solveKnightsTour(newRow, newCol, moveNum + 1, visited, tour, size)) {
+        return true;
+      }
+      
+      // Backtrack
+      visited[newRow][newCol] = 0;
+      tour.pop();
     }
-
-    visited[move.row][move.col] = false;
-    solution.pop();
   }
-
+  
   return false;
 }
 
-function getValidMoves(row, col, visited, size) {
+/**
+ * Get ordered moves based on Warnsdorff's heuristic (fewest onward moves first)
+ * @param {number} row - Current row
+ * @param {number} col - Current column
+ * @param {Array<Array<number>>} visited - Board with visited positions
+ * @param {number} size - Board size
+ * @returns {Array<Array<number>>} - Ordered moves
+ */
+function getOrderedMoves(row, col, visited, size) {
   const moves = [];
   
   for (const [rowDiff, colDiff] of knightMoves) {
@@ -46,25 +111,26 @@ function getValidMoves(row, col, visited, size) {
     const newCol = col + colDiff;
     
     if (isValidPosition(newRow, newCol, visited, size)) {
-      moves.push({
-        row: newRow,
-        col: newCol,
-        accessibility: countUnvisitedNeighbors(newRow, newCol, visited, size)
-      });
+      const accessibilityScore = countUnvisitedNeighbors(newRow, newCol, visited, size);
+      moves.push({ rowDiff, colDiff, accessibilityScore });
     }
   }
-
-  // Sort moves by accessibility (Warnsdorff's heuristic)
-  moves.sort((a, b) => a.accessibility - b.accessibility);
-  return moves;
+  
+  // Sort moves by accessibility score (fewer accessible neighbors first)
+  moves.sort((a, b) => a.accessibilityScore - b.accessibilityScore);
+  
+  // Return just the move deltas
+  return moves.map(move => [move.rowDiff, move.colDiff]);
 }
 
-function isValidPosition(row, col, visited, size) {
-  return row >= 0 && row < size && 
-         col >= 0 && col < size && 
-         !visited[row][col];
-}
-
+/**
+ * Count unvisited neighbors of a position
+ * @param {number} row - Row to check
+ * @param {number} col - Column to check
+ * @param {Array<Array<number>>} visited - Board with visited positions
+ * @param {number} size - Board size
+ * @returns {number} - Count of unvisited neighbors
+ */
 function countUnvisitedNeighbors(row, col, visited, size) {
   let count = 0;
   for (const [rowDiff, colDiff] of knightMoves) {
@@ -77,17 +143,28 @@ function countUnvisitedNeighbors(row, col, visited, size) {
   return count;
 }
 
-export async function savePerformanceMetrics(game, algorithm, solution, executionTime) {
+/**
+ * Save performance metrics to database
+ * @param {Object} game - Game instance
+ * @param {string} algorithm - Algorithm name
+ * @param {Object} result - Algorithm result
+ * @returns {Promise<void>}
+ */
+export async function savePerformanceMetrics(game, algorithm, result) {
   if (!game.gameId) return;
   
   try {
-    // Create move sequence string from solution
-    const moveSequence = solution.map(
-      move => game.toAlgebraicNotation(move.row, move.col)
-    ).join(',');
-    
-    // Update game record
-    await game.saveAlgorithmSolution(algorithm, solution, executionTime);
+    await trackAlgorithmPerformance({
+      gameId: game.gameId,
+      algorithmName: algorithm,
+      executionTime: result.executionTime,
+      solutionFound: result.success,
+      iterations: result.iterations,
+      parameters: {
+        boardSize: result.boardSize,
+        startPosition: `${game.toAlgebraicNotation(game.startPosition.row, game.startPosition.col)}`
+      }
+    });
     
     logger.info(`Performance metrics saved for ${algorithm} algorithm`);
   } catch (error) {

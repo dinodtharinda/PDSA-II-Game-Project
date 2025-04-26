@@ -273,3 +273,4 @@ Each game module is worth 20 marks, split between:
 - [PROGRESS.md](docs/PROGRESS.md): Detailed progress tracking for the project.
 - [PLAN.md](docs/PLAN.md): Project structure and technical details.
 - [API.md](docs/API.md): API documentation for the project.
+- [SCHEMA.md](docs/SCHEMA.md): Database schema and relationships.
