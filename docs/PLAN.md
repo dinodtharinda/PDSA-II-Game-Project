@@ -143,23 +143,46 @@ This document outlines the development plan, milestones, and task distribution f
 
 ## Technology Stack
 
-- **Programming Language:** JavaScript (Node.js)
+- **Frontend Build Tool:** Vite
+- **Programming Language:** JavaScript (ES Modules)
+- **Runtime Environment:** Node.js
 - **UI Framework:** HTML5, CSS3, Bootstrap 5
 - **Database:** SQLite
-- **Testing Framework:** Jest
+- **Testing Framework:** Jest with ES Module support
+- **Template Engine:** EJS
 - **Version Control:** Git
 - **Documentation:** Markdown, Word/PDF
+
+## Development Infrastructure
+
+### Build System
+- Vite for development and production builds
+- Multi-page application setup
+- Source map support for debugging
+- Asset optimization and bundling
+- Hot Module Replacement (HMR) in development
+
+### Module System
+- ES Modules for both client and server code
+- Dynamic imports for code splitting
+- Proper path aliasing and module resolution
+- Browser-compatible module loading
+
+### Development Workflow
+- NPM scripts for common tasks
+- Automated testing with Jest
+- ESLint for code quality
+- Prettier for code formatting
+- Git hooks for pre-commit validation
 
 ## Project Structure
 
 ```
 PDSA-II-Game-Project/
 ├── README.md            # Project overview
-├── PLAN.md              # Development plan and timeline
-├── PROGRESS.md          # Progress tracking document
-├── package.json         # Node.js project configuration
-├── app.js               # Main application entry point
-├── server.js            # Express server setup
+├── package.json         # Node.js project configuration with ES Module support
+├── vite.config.js       # Vite configuration for bundling and development
+├── eslint.config.mjs    # ESLint configuration for ES Modules
 │
 ├── public/              # Static public assets
 │   ├── css/             # Stylesheets
@@ -167,6 +190,7 @@ PDSA-II-Game-Project/
 │   └── images/          # Game images and icons
 │
 ├── src/                 # Source code
+│   ├── server.js        # Express server setup (ES Modules)
 │   ├── config/          # Configuration files
 │   │   └── db.js        # Database connection configuration
 │   │
@@ -189,53 +213,54 @@ PDSA-II-Game-Project/
 │   │   └── timer.js     # Performance timer
 │   │
 │   ├── games/           # Game implementations
+│   │   ├── BaseGame.js  # Base game class with common functionality
 │   │   ├── ticTacToe/
+│   │   │   ├── ui/      # UI components
+│   │   │   │   └── index.js # Entry point
 │   │   │   ├── game.js  # Game logic
-│   │   │   ├── ui.js    # UI components
-│   │   │   ├── algorithms/ # Different AI approaches
-│   │   │   │   ├── minimax.js
-│   │   │   │   └── mcts.js # Monte Carlo Tree Search
-│   │   │   └── tests/   # Unit tests
+│   │   │   └── algorithms/ # Different AI approaches
+│   │   │       ├── minimax.js
+│   │   │       └── mcts.js # Monte Carlo Tree Search
 │   │   │
 │   │   ├── tsp/         # Traveling Salesman Problem
+│   │   │   ├── ui/      # UI components
+│   │   │   │   └── index.js # Entry point
 │   │   │   ├── game.js
-│   │   │   ├── ui.js
-│   │   │   ├── algorithms/
-│   │   │   │   ├── nearestNeighbor.js
-│   │   │   │   ├── dynamicProgramming.js
-│   │   │   │   └── geneticAlgorithm.js
-│   │   │   └── tests/
+│   │   │   └── algorithms/
+│   │   │       ├── nearestNeighbor.js
+│   │   │       ├── dynamicProgramming.js
+│   │   │       └── geneticAlgorithm.js
 │   │   │
 │   │   ├── towerOfHanoi/
+│   │   │   ├── ui/      # UI components
+│   │   │   │   └── index.js # Entry point
 │   │   │   ├── game.js
-│   │   │   ├── ui.js
-│   │   │   ├── algorithms/
-│   │   │   │   ├── recursive.js
-│   │   │   │   ├── iterative.js
-│   │   │   │   └── frameStewart.js
-│   │   │   └── tests/
+│   │   │   └── algorithms/
+│   │   │       ├── recursive.js
+│   │   │       ├── iterative.js
+│   │   │       └── frameStewart.js
 │   │   │
 │   │   ├── eightQueens/
+│   │   │   ├── ui/      # UI components
+│   │   │   │   └── index.js # Entry point
 │   │   │   ├── game.js
-│   │   │   ├── ui.js
-│   │   │   ├── algorithms/
-│   │   │   │   ├── sequential.js
-│   │   │   │   └── threaded.js
-│   │   │   └── tests/
+│   │   │   └── algorithms/
+│   │   │       ├── sequential.js
+│   │   │       └── threaded.js
 │   │   │
 │   │   └── knightsTour/
+│   │       ├── ui/      # UI components
+│   │       │   └── index.js # Entry point
 │   │       ├── game.js
-│   │       ├── ui.js
-│   │       ├── algorithms/
-│   │       │   ├── backtracking.js
-│   │       │   └── warnsdorff.js
-│   │       └── tests/
+│   │       └── algorithms/
+│   │           ├── backtracking.js
+│   │           └── warnsdorff.js
 │   │
 │   └── middleware/      # Express middleware
 │       ├── auth.js      # Authentication middleware
 │       └── errorHandler.js # Error handling middleware
 │
-├── views/               # EJS or Handlebars templates
+├── views/               # EJS templates
 │   ├── layouts/         # Page layouts
 │   ├── partials/        # Reusable template parts
 │   └── pages/           # Page templates
@@ -246,18 +271,18 @@ PDSA-II-Game-Project/
 │
 ├── database/            # Database related files
 │   ├── migrations/      # Schema migrations
-│   ├── seeds/           # Seed data
 │   └── game.db          # SQLite database file
 │
-├── tests/               # Integration tests
+├── tests/               # Test files
+│   ├── setup.js         # Test setup
 │   ├── integration/     # Integration tests
-│   └── performance/     # Performance tests
+│   └── unit/            # Unit tests
 │
 └── docs/                # Documentation
-    ├── individual/      # Individual reports
-    ├── group/           # Group report
-    ├── schemas/         # Database schemas
-    └── api/             # API documentation
+    ├── API.md           # API documentation
+    ├── PLAN.md          # Development plan and timeline
+    ├── PROGRESS.md      # Progress tracking document
+    └── MEMORY.md        # Project memory and significant changes
 ```
 
 ## Database Schema

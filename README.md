@@ -17,6 +17,7 @@ This repository contains a collection of algorithmic games implemented as part o
 - [Development Guide](#development-guide)
   - [Game Development Workflow](#game-development-workflow)
   - [Implementing a Game](#implementing-a-game)
+- [ES Modules Migration](#es-modules-migration)
 - [Deliverables](#deliverables)
 - [Evaluation Criteria](#evaluation-criteria)
 
@@ -111,14 +112,18 @@ An implementation of the Knight's Tour chess problem with random starting positi
 
 3. Set up the database:
    ```bash
-   node scripts/seed.js
+   npm run db:setup
+   ```
+   or
+   ```bash
+   npm run db:reset
    ```
 
 ### Running the Project
 
 1. Start the development server:
    ```bash
-   npm start
+   npm run dev
    ```
 
 2. Access the application in your browser:
@@ -201,6 +206,37 @@ Here's a step-by-step guide to implementing each game:
 - Use the validation utilities in `src/utils/validator.js`
 - Use the logger for debugging in `src/utils/logger.js`
 
+## ES Modules Migration
+
+✅ The project has been fully migrated from CommonJS to ES Modules, improving code maintainability and enabling modern JavaScript features. This migration included:
+
+### Completed Migration
+- Base project configuration with `"type": "module"` in package.json
+- Vite setup for module bundling and modern development workflow
+- Core utilities (Timer, Logger, Validator) migrated to ES Modules
+- Database connectivity layer migrated to async ES Module patterns
+- All game modules successfully migrated:
+  - Knight's Tour module
+  - Tower of Hanoi module
+  - Eight Queens module 
+  - Tic Tac Toe module
+  - Traveling Salesman Problem module
+
+### Current Focus (Post-Migration)
+Now that the ES Module migration is complete, the focus has shifted to:
+1. Completing database integration for all game modules
+2. Performing end-to-end testing of the application
+3. Optimizing performance of dynamic imports
+4. Finalizing documentation and reporting
+
+### Development with ES Modules
+When developing new features or updating existing ones:
+- Use `import` and `export` syntax instead of `require` and `module.exports`
+- Add `.js` extensions to all import paths
+- For dynamic imports, use `import()` function with async/await
+- Use the getSequelize() pattern for database connections
+- Follow the established patterns for dynamic algorithm loading
+
 ## Deliverables
 
 1. **Software with Source Code** (GitHub Repository)
@@ -231,3 +267,9 @@ Each game module is worth 20 marks, split between:
   - Program logic explanation
   - Algorithm complexity analysis
   - Comparison of algorithmic approaches
+
+## Documentation
+- [MEMORY.md](docs/MEMORY.md): Tracks significant current changes and decisions that need immediate attention.
+- [PROGRESS.md](docs/PROGRESS.md): Detailed progress tracking for the project.
+- [PLAN.md](docs/PLAN.md): Project structure and technical details.
+- [API.md](docs/API.md): API documentation for the project.
