@@ -1,6 +1,6 @@
 # PDSA-II Game Project
 
-This repository contains a collection of algorithmic games implemented as part of the PDSA-II (Problem-solving and Data Structures & Algorithms II) coursework. Each game demonstrates different algorithmic approaches to solve classical computer science problems.
+This repository contains a collection of algorithmic games implemented as a fully client-side web application for the PDSA-II (Problem-solving and Data Structures & Algorithms II) coursework. Each game demonstrates different algorithmic approaches to solve classical computer science problems using JavaScript, HTML, and CSS, with data persistence handled by SQL.js in the browser.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -11,19 +11,17 @@ This repository contains a collection of algorithmic games implemented as part o
   - [Eight Queens Puzzle](#eight-queens-puzzle)
   - [Knight's Tour Problem](#knights-tour-problem)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the Project](#running-the-project)
 - [Development Guide](#development-guide)
   - [Game Development Workflow](#game-development-workflow)
   - [Implementing a Game](#implementing-a-game)
-- [ES Modules Migration](#es-modules-migration)
+- [Architecture](#architecture)
 - [Deliverables](#deliverables)
 - [Evaluation Criteria](#evaluation-criteria)
+- [Documentation](#documentation)
 
 ## Overview
 
-This project implements a suite of five classical algorithmic games, each showcasing different algorithms and data structures. For each game, multiple algorithmic approaches are implemented and compared for performance and efficiency.
+This project implements a suite of five classical algorithmic games, each showcasing different algorithms and data structures. For each game, multiple algorithmic approaches are implemented and compared for performance and efficiency. The entire application runs in the browser, utilizing client-side routing and an in-browser SQLite database (SQL.js) for data storage and persistence via localStorage.
 
 ## Game Modules
 
@@ -91,45 +89,10 @@ An implementation of the Knight's Tour chess problem with random starting positi
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (v14.0.0 or higher)
-- npm (v6.0.0 or higher)
-- Git
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd game-project
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up the database:
-   ```bash
-   npm run db:setup
-   ```
-   or
-   ```bash
-   npm run db:reset
-   ```
-
-### Running the Project
-
-1. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-2. Access the application in your browser:
-   ```
-   http://localhost:3000
-   ```
+```bash
+npx serve
+```
+Open your browser and navigate to `http://localhost:3000` to access the application.
 
 ## Development Guide
 
@@ -137,121 +100,83 @@ An implementation of the Knight's Tour chess problem with random starting positi
 
 The project follows this general workflow for each game:
 
-1. **Game Logic Development**: Implement the core game mechanics in the `game.js` file
-2. **UI Component Development**: Create the user interface in the `ui.js` file
-3. **Algorithm Implementation**: Implement required algorithms in the `algorithms/` directory
-4. **Testing**: Write unit tests in the `tests/` directory
-5. **Database Integration**: Connect game to database to store performance metrics
-6. **Validation & Exception Handling**: Add input validation and error handling
+1. **Game Logic Development**: Implement the core game mechanics in the `js/games/<gameName>/game.js` file.
+2. **UI Component Development**: Create the user interface in the `js/games/<gameName>/ui/index.js` file.
+3. **Algorithm Implementation**: Implement required algorithms in the `js/games/<gameName>/algorithms/` directory.
+4. **Client-Side API Service**: Implement database interactions in `js/games/<gameName>/services/api.js` using the core `js/db.js` module.
+5. **Testing**: Add unit tests (if applicable).
+6. **Validation & Exception Handling**: Add input validation and error handling in UI and service layers.
 
 ### Implementing a Game
 
-Here's a step-by-step guide to implementing each game:
+Here's a step-by-step guide reflecting the client-side structure:
 
 #### 1. Tic-Tac-Toe
 
-1. Implement the 5×5 grid in `src/games/ticTacToe/ui.js`
-2. Create the game state management in `src/games/ticTacToe/game.js`
-3. Implement the Minimax algorithm in `src/games/ticTacToe/algorithms/minimax.js`
-4. Implement the Monte Carlo Tree Search in `src/games/ticTacToe/algorithms/mcts.js`
-5. Connect to the database using `src/models` to store game results
-6. Add unit tests in the `tests/` directory
+1. Implement the 5×5 grid UI in `js/games/ticTacToe/ui/index.js`.
+2. Create the game state management in `js/games/ticTacToe/game.js`.
+3. Implement algorithms in `js/games/ticTacToe/algorithms/`.
+4. Implement database interactions in `js/games/ticTacToe/services/api.js`.
 
 #### 2. Traveling Salesman Problem
 
-1. Implement the city selection UI in `src/games/tsp/ui.js`
-2. Create distance matrix generation in `src/games/tsp/game.js`
-3. Implement the three algorithms:
-   - Nearest Neighbor in `src/games/tsp/algorithms/nearestNeighbor.js`
-   - Dynamic Programming in `src/games/tsp/algorithms/dynamicProgramming.js`
-   - Genetic Algorithm in `src/games/tsp/algorithms/geneticAlgorithm.js`
-4. Add database connections for storing performance metrics
-5. Write unit tests for each component
+1. Implement the city selection UI in `js/games/tsp/ui/index.js`.
+2. Create distance matrix generation in `js/games/tsp/game.js`.
+3. Implement algorithms in `js/games/tsp/algorithms/`.
+4. Implement database interactions in `js/games/tsp/services/api.js`.
 
 #### 3. Tower of Hanoi
 
-1. Create the disk and tower visualization in `src/games/towerOfHanoi/ui.js`
-2. Implement the game mechanics in `src/games/towerOfHanoi/game.js`
-3. Implement the algorithms:
-   - Recursive solution in `src/games/towerOfHanoi/algorithms/recursive.js`
-   - Iterative solution in `src/games/towerOfHanoi/algorithms/iterative.js`
-   - Frame-Stewart algorithm for 4 pegs in `src/games/towerOfHanoi/algorithms/frameStewart.js`
-4. Add performance measurement using the timer utility
-5. Connect to the database for storing solutions and metrics
+1. Create the disk and tower visualization in `js/games/towerOfHanoi/ui/index.js`.
+2. Implement game mechanics in `js/games/towerOfHanoi/game.js`.
+3. Implement algorithms in `js/games/towerOfHanoi/algorithms/`.
+4. Implement database interactions in `js/games/towerOfHanoi/services/api.js`.
 
 #### 4. Eight Queens Puzzle
 
-1. Create the chessboard UI in `src/games/eightQueens/ui.js`
-2. Implement game logic and queen placement validation in `src/games/eightQueens/game.js`
-3. Implement the algorithms:
-   - Sequential solution in `src/games/eightQueens/algorithms/sequential.js`
-   - Threaded solution in `src/games/eightQueens/algorithms/threaded.js`
-4. Add database connection for solution tracking
-5. Write performance comparison tests
+1. Create the chessboard UI in `js/games/eightQueens/ui/index.js`.
+2. Implement game logic in `js/games/eightQueens/game.js`.
+3. Implement algorithms in `js/games/eightQueens/algorithms/`.
+4. Implement database interactions in `js/games/eightQueens/services/api.js`.
 
 #### 5. Knight's Tour Problem
 
-1. Create the chessboard visualization in `src/games/knightsTour/ui.js`
-2. Implement starting position randomization in `src/games/knightsTour/game.js`
-3. Implement the algorithms:
-   - Backtracking in `src/games/knightsTour/algorithms/backtracking.js`
-   - Warnsdorff's algorithm in `src/games/knightsTour/algorithms/warnsdorff.js`
-4. Add database integration for storing performance metrics
-5. Write unit tests for move validation and algorithm correctness
+1. Create the chessboard visualization in `js/games/knightsTour/ui/index.js`.
+2. Implement game logic in `js/games/knightsTour/game.js`.
+3. Implement algorithms in `js/games/knightsTour/algorithms/`.
+4. Implement database interactions in `js/games/knightsTour/services/api.js`.
 
 ### Common Components To Use
 
-- Use the database connection in `src/config/db.js`
-- Use the performance timer in `src/utils/timer.js`
-- Use the validation utilities in `src/utils/validator.js`
-- Use the logger for debugging in `src/utils/logger.js`
+- Use the client-side database module in `js/db.js`.
+- Use the performance timer in `js/utils/timer.js`.
+- Use the logger for debugging in `js/utils/logger.js`.
+- Use the client-side router in `js/router.js`.
 
-## ES Modules Migration
+## Architecture
 
-✅ The project has been fully migrated from CommonJS to ES Modules, improving code maintainability and enabling modern JavaScript features. This migration included:
-
-### Completed Migration
-- Base project configuration with `"type": "module"` in package.json
-- Vite setup for module bundling and modern development workflow
-- Core utilities (Timer, Logger, Validator) migrated to ES Modules
-- Database connectivity layer migrated to async ES Module patterns
-- All game modules successfully migrated:
-  - Knight's Tour module
-  - Tower of Hanoi module
-  - Eight Queens module 
-  - Tic Tac Toe module
-  - Traveling Salesman Problem module
-
-### Current Focus (Post-Migration)
-Now that the ES Module migration is complete, the focus has shifted to:
-1. Completing database integration for all game modules
-2. Performing end-to-end testing of the application
-3. Optimizing performance of dynamic imports
-4. Finalizing documentation and reporting
-
-### Development with ES Modules
-When developing new features or updating existing ones:
-- Use `import` and `export` syntax instead of `require` and `module.exports`
-- Add `.js` extensions to all import paths
-- For dynamic imports, use `import()` function with async/await
-- Use the getSequelize() pattern for database connections
-- Follow the established patterns for dynamic algorithm loading
+✅ The project utilizes a fully client-side architecture:
+- **Frontend**: HTML, CSS, JavaScript (ES Modules)
+- **Routing**: Client-side routing using the History API (`js/router.js`).
+- **Database**: In-browser SQLite database using SQL.js (`js/lib/sql-wasm.js`, `js/db.js`).
+- **Persistence**: Database state is persisted across sessions using browser localStorage.
+- **No Server**: The application is served as static files and requires no backend server.
 
 ## Deliverables
 
-1. **Software with Source Code** (GitHub Repository)
-2. **Database with Data Dump**
+1. **Software with Source Code** (GitHub Repository containing the client-side application).
+2. **Database with Data Dump** (Exported data from the client-side SQL.js database, likely via a UI feature).
 3. **Individual Reports** for each game module including:
    - Program logic explanation
    - Algorithm complexity analysis
    - Comparison of algorithmic approaches
-   - Performance charts for 10 game rounds
+   - Performance charts for 10 game rounds (generated from client-side data)
 4. **Group Report** including:
    - UI screenshots
    - Explanation of validations and exception handling
-   - Code segments for unit testing
-   - Database structure screenshots
-   - Implementation code segments
+   - Code segments for unit testing (if applicable)
+   - Database structure screenshots (from `docs/SCHEMA.md`)
+   - Implementation code segments (from the `js/` directory)
 5. **Video Demonstration** of game features
 
 ## Evaluation Criteria
@@ -269,8 +194,9 @@ Each game module is worth 20 marks, split between:
   - Comparison of algorithmic approaches
 
 ## Documentation
-- [MEMORY.md](docs/MEMORY.md): Tracks significant current changes and decisions that need immediate attention.
+- [MEMORY.md](docs/MEMORY.md): Tracks significant current changes and decisions.
 - [PROGRESS.md](docs/PROGRESS.md): Detailed progress tracking for the project.
 - [PLAN.md](docs/PLAN.md): Project structure and technical details.
-- [API.md](docs/API.md): API documentation for the project.
-- [SCHEMA.md](docs/SCHEMA.md): Database schema and relationships.
+- [API.md](docs/API.md): Documentation for the client-side API services (`js/games/.../services/api.js`).
+- [SCHEMA.md](docs/SCHEMA.md): Client-side database schema.
+- [STRUCTURE.md](docs/STRUCTURE.md): Project file structure.

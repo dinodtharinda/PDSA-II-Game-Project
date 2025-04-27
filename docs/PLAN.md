@@ -1,109 +1,87 @@
-# Development Plan for PDSA-II Game Project
+# Development Plan for PDSA-II Game Project (Client-Side Implementation)
 
-This document outlines the development plan, milestones, and task distribution for the PDSA-II Game Project.
+This document outlines the development plan, milestones, and task distribution for the PDSA-II Game Project, implemented as a fully client-side web application.
 
-## Game Modules Development Plan
+## Game Modules Development Plan (Client-Side)
 
 ### 1. Tic-Tac-Toe
 
 #### Completed Features
-- 5×5 game board with responsive design
-- Human vs Computer gameplay
-- Win detection for 4-in-a-row horizontally, vertically, and diagonally
-- Two AI algorithms:
-  - Minimax with alpha-beta pruning (adaptive depth based on board state)
-  - Monte Carlo Tree Search with UCT selection
-- Performance measurement and algorithm comparison
-- Mobile-friendly UI with touch support
-- Visual feedback for current player and AI thinking states
+- 5×5 game board with responsive design (HTML/CSS/JS)
+- Human vs Computer gameplay logic (`js/games/ticTacToe/game.js`)
+- Win detection logic
+- Two AI algorithms implemented in JavaScript (`js/games/ticTacToe/algorithms/`):
+  - Minimax with alpha-beta pruning
+  - Monte Carlo Tree Search
+- Performance measurement using `js/utils/timer.js`
+- Client-side database integration (`js/games/ticTacToe/services/api.js`) for storing game results and algorithm performance via SQL.js.
+- Mobile-friendly UI
 
 #### Technical Details
-- Board representation: 5×5 null/X/O array
-- Move validation: boundary and occupancy checks
-- Win condition: count consecutive symbols in 8 directions
-- AI move timing: performance measured in milliseconds
-- UI optimizations: debounced rendering, hardware acceleration
-- Error handling: input validation and graceful degradation
+- Board representation: 5×5 JavaScript array
+- AI move timing: performance measured in milliseconds using client-side timer.
+- Database: SQL.js via `js/db.js`.
 
 ### 2. Traveling Salesman Problem
 
 #### Completed Features
-- Random distance matrix generation (50-100 km between cities A-J)
-- Random home city selection for each game round
-- Interactive city selection UI with visual feedback
-- Three algorithmic approaches implemented and compared:
-  - Nearest Neighbor algorithm (greedy approach)
-  - Dynamic Programming solution (exact optimal solution)
-  - Genetic Algorithm implementation (population-based approximation)
-- Performance comparison between algorithms with detailed metrics
-- City visualization with route display
-- Mobile-friendly UI with touch support
+- Random distance matrix generation in JavaScript (`js/games/tsp/game.js`)
+- Random home city selection
+- Interactive city selection UI
+- Three algorithmic approaches implemented in JavaScript (`js/games/tsp/algorithms/`):
+  - Nearest Neighbor
+  - Genetic Algorithm
+- Performance comparison using `js/utils/timer.js`
+- Client-side database integration (`js/games/tsp/services/api.js`) for storing game results, routes, and performance via SQL.js.
+- City visualization with route display (e.g., using SVG or Canvas)
+- Mobile-friendly UI
 
 #### Technical Details
-- Distance representation: 10×10 matrix (cities A-J)
-- Random generation: Distances between 50-100 km, symmetric matrix
-- Path validation: Complete circuit validation including home city return
-- Algorithms:
-  - Nearest Neighbor: O(n²) greedy approach
-  - Dynamic Programming: O(n²2ⁿ) Held-Karp algorithm
-  - Genetic Algorithm: Population-based with crossover and mutation
-- Performance tracking: Execution time and solution quality comparison
-- UI: SVG-based city map with path animation
-- Error handling: Input validation with user feedback
+- Distance representation: JavaScript 2D array
+- Algorithms implemented purely in client-side JavaScript.
+- Performance tracking: Execution time and solution quality comparison stored in SQL.js.
+- UI: SVG/Canvas based map.
 
 ### 3. Tower of Hanoi
 
 #### Completed Implementation
-- Interactive disk and tower visualization with drag-and-drop support
-- Support for both 3 and 4 pegs with variable disk count (5-10)
-- Three algorithmic approaches implemented and compared:
-  - Recursive solution for 3 pegs (optimal)
-  - Iterative solution for 3 pegs
+- Interactive disk and tower visualization (HTML/CSS/JS)
+- Support for 3 and 4 pegs with variable disk count (`js/games/towerOfHanoi/game.js`)
+- Three algorithmic approaches implemented in JavaScript (`js/games/towerOfHanoi/algorithms/`):
+  - Recursive solution for 3 pegs
   - Frame-Stewart algorithm for 4 pegs
-- Performance measurement and algorithm comparison
-- Complete database integration for game sessions and metrics
-- Mobile-friendly UI with touch support
-- Comprehensive unit tests
+- Performance measurement using `js/utils/timer.js`
+- Complete client-side database integration (`js/games/towerOfHanoi/services/api.js`) for game sessions and metrics via SQL.js.
+- Mobile-friendly UI
+- Comprehensive unit tests (if applicable)
 
 #### Technical Details
-- Disk representation: Array-based stack for each peg
-- Move validation: Size ordering constraints
-- Animation system: CSS transitions for smooth disk movement
-- Performance tracking: Move count and execution time comparison
-- Error handling: Complete move validation and state management
-- Database integration: Game sessions, moves, and algorithm metrics stored
+- Disk representation: Array-based stack simulation in JavaScript.
+- Animation system: CSS transitions or JavaScript animation.
+- Performance tracking: Move count and execution time stored in SQL.js.
+- Database integration: Game sessions, moves, and algorithm metrics stored via `js/db.js`.
 
 #### Features
 - Random disk count generation (5-10)
-- Interactive disk movement with click/touch support
+- Interactive disk movement
 - Real-time move validation
 - Algorithm visualization
-- Performance comparison between approaches
+- Performance comparison
 - Solution replay functionality
-- Progress tracking and optimal move count display
-- Support for both 3-peg and 4-peg variants
+- Progress tracking
+- Support for 3-peg and 4-peg variants
 
 ### 4. Eight Queens Puzzle
 
 #### Completed Implementation
-- Interactive chessboard visualization with queen placement functionality
-- Solution verification with threat detection and visual feedback
-- Two algorithmic approaches implemented and compared:
-  - Sequential solution finder (single-threaded)
-  - Multi-threaded solution with configurable thread count
-- Performance comparison between sequential and threaded approaches
-- Solution tracking with storage and display of all valid configurations
-- Complete game session management
-- Mobile-friendly UI with touch support
-
-#### Technical Details
-- Board representation: 8×8 boolean array for queen placement
-- Solution verification: Row, column, and diagonal checking
-- Threading model: Task-based parallelism with shared result collection
-- Performance tracking: Execution time and thread utilization metrics
-- UI components: Drag-and-drop queen placement with validation
-- Animation system: CSS transitions for queen placement and removal
-- Error handling: Complete state validation with user feedback
+- Interactive chessboard UI (HTML/CSS/JS)
+- Queen placement and validation logic (`js/games/eightQueens/game.js`)
+- Algorithmic approaches implemented in JavaScript (`js/games/eightQueens/algorithms/`):
+  - Backtracking algorithm (simulating sequential)
+  - Potentially optimized backtracking or other approach (simulating threaded/parallel concept, e.g., using Web Workers if implemented, or just comparing different single-threaded JS algorithms)
+- Performance comparison using `js/utils/timer.js`
+- Client-side database integration (`js/games/eightQueens/services/api.js`) for storing solutions and performance via SQL.js.
+- Solution tracking to prevent duplicates.
 
 ### 5. Knight's Tour Problem
 
@@ -147,7 +125,7 @@ This document outlines the development plan, milestones, and task distribution f
 - **Programming Language:** JavaScript (ES Modules)
 - **Runtime Environment:** Node.js
 - **UI Framework:** HTML5, CSS3, Bootstrap 5
-- **Database:** SQLite
+- **Database:** SQL.js (SQLite in WebAssembly)
 - **Testing Framework:** Jest with ES Module support
 - **Template Engine:** EJS
 - **Version Control:** Git
@@ -175,120 +153,6 @@ This document outlines the development plan, milestones, and task distribution f
 - Prettier for code formatting
 - Git hooks for pre-commit validation
 
-## Project Structure
-
-```
-PDSA-II-Game-Project/
-├── README.md                                   # Project overview
-├── package.json                                # Node.js project configuration with ES Module support
-├── package-lock.json                           # Dependency lock file
-├── .gitignore                                  # Git ignore file
-│
-├── public/                                     # Static public assets
-│   ├── css/                                    # Stylesheets
-│   └── images/                                 # Game images and icons
-│
-├── src/                                        # Source code
-│   ├── server.js                               # Express server setup (ES Modules)
-│   ├── config/                                 # Configuration files
-│   │   └── db.js                               # Database connection configuration
-│   │
-│   ├── models/                                 # Database models
-│   │   ├── game.js                             # Game model
-│   │   ├── index.js                            # Centralized model exports
-│   │   ├── performance.js                      # Performance tracking model
-│   │   └── player.js                           # Player model
-│   │
-│   ├── controllers/                            # Route controllers
-│   │   ├── gameController.js                   # Main game controller
-│   │   └── statsController.js                  # Statistics controller
-│   │
-│   ├── routes/                                 # Express routes
-│   │   ├── api.js                              # API routes
-│   │   └── pages.js                            # Page routes
-│   │
-│   ├── utils/                                  # Utility functions
-│   │   ├── logger.js                           # Logging utility
-│   │   ├── performanceTracker.js               # Performance tracking utility
-│   │   ├── security.js                         # Security utilities (e.g., hashing, encryption)
-│   │   ├── timer.js                            # Performance timer
-│   │   └── validator.js                        # validation utility
-│   │
-│   ├── games/                                  # Game implementations
-│   │   ├── BaseGame.js                         # Base game class with common functionality
-│   │   ├── ticTacToe/                          # Tic-Tac-Toe game module
-│   │   │   ├── ui/                             # UI components
-│   │   │   │   └── index.js                    # Entry point
-│   │   │   ├── game.js                         # Game logic
-│   │   │   └── algorithms/                     # Different AI approaches
-│   │   │       ├── minimax.js                  # Minimax algorithm
-│   │   │       └── mcts.js                     # Monte Carlo Tree Search
-│   │   │
-│   │   ├── tsp/                                # Traveling Salesman Problem
-│   │   │   ├── ui/                             # UI components
-│   │   │   │   └── index.js                    # Entry point
-│   │   │   ├── game.js                         # Game logic
-│   │   │   └── algorithms/                     # Different algorithm implementations
-│   │   │       ├── nearestNeighbor.js          # Nearest Neighbor algorithm
-│   │   │       ├── dynamicProgramming.js       # Dynamic Programming solution
-│   │   │       └── geneticAlgorithm.js         # Genetic Algorithm
-│   │   │
-│   │   ├── towerOfHanoi/                       # Tower of Hanoi game module
-│   │   │   ├── ui/                             # UI components
-│   │   │   │   └── index.js                    # Entry point
-│   │   │   ├── game.js                         # Game logic
-│   │   │   └── algorithms/                     # Different algorithm implementations
-│   │   │       ├── recursive.js                # Recursive solution
-│   │   │       ├── iterative.js                # Iterative solution
-│   │   │       └── frameStewart.js             # Frame-Stewart algorithm
-│   │   │
-│   │   ├── eightQueens/                        # Eight Queens game module
-│   │   │   ├── ui/                             # UI components
-│   │   │   │   └── index.js                    # Entry point
-│   │   │   ├── game.js                         # Game logic
-│   │   │   └── algorithms/                     # Different algorithm implementations
-│   │   │       ├── sequential.js               # Sequential algorithm
-│   │   │       └── threaded.js                 # Threaded algorithm
-│   │   │
-│   │   └── knightsTour/
-│   │       ├── ui/                             # UI components
-│   │       │   └── index.js                    # Entry point
-│   │       ├── game.js                         # Game logic
-│   │       └── algorithms/                     # Different algorithm implementations
-│   │           ├── backtracking.js             # Backtracking algorithm
-│   │           └── warnsdorff.js               # Warnsdorff's algorithm
-│   │
-│   └── middleware/                             # Express middleware
-│       ├── auth.js                             # Authentication middleware
-│       └── errorHandler.js                     # Error handling middleware
-│
-├── views/                                      # EJS templates
-│   ├── layouts/                                # Page layouts
-│   ├── partials/                               # Reusable template parts
-│   └── pages/                                  # Page templates
-│
-├── scripts/                                    # Development and deployment scripts
-│   ├── seed.js                                 # Database seeding script
-│   └── benchmarks.js                           # Performance testing scripts
-│
-├── database/                                   # Database related files
-│   ├── migrations/                             # Schema migrations
-│   └── game.db                                 # SQLite database file
-│
-├── tests/                                      # Test files
-│   ├── setup.js                                # Test setup
-│   ├── integration/                            # Integration tests
-│   └── unit/                                   # Unit tests
-│
-└── docs/                                       # Documentation
-    ├── API.md                                  # API documentation
-    ├── PLAN.md                                 # Development plan and timeline
-    ├── PROGRESS.md                             # Progress tracking document
-    ├── SCHEMA.md                               # Database schema documentation
-    └── MEMORY.md                               # Memory management and performance analysis
-```
-
-
 ## Team Responsibilities
 
 Thathsika - Game Module 1 (Knights Tour)
@@ -296,3 +160,189 @@ Adithya - Game Module 1 (Tower of Hanoi, Knights Tour, Eight Queens, Traveling S
 Dinod - Game Module 2 (Tic-Tac-Toe, Eight Queens)
 Sadew - Game Module 3 (Traveling Salesman Problem)
 Yasiru - Game Module 4 (Eight Queens)
+
+# Project Architecture and Technical Plan
+
+Last Updated: April 27, 2025
+
+## Project Structure
+
+This document outlines the key architectural decisions and technical plans for the PDSA-II Game Project.
+
+## Overall Architecture
+
+**UPDATED:** The project has been migrated to a fully client-side architecture using SQL.js for in-browser SQLite:
+
+### Client-Side Architecture (Browser)
+- Game UI components
+- Game state management
+- Algorithm implementation and execution
+- Client-side SQLite database (SQL.js)
+- Client-side routing (History API)
+- All application logic
+
+### Key Components
+- `index.html` - Main application entry point
+- `js/app.js` - Application initialization
+- `js/db.js` - Client-side SQLite database operations
+- `js/router.js` - Client-side routing
+- `js/games/*/services/api.js` - Game service modules
+
+## Client-Side SQLite Architecture
+
+The project now uses SQL.js to provide full database functionality in the browser:
+
+1. **Database Initialization**
+   - SQL.js loads SQLite engine in WebAssembly
+   - Database loads from existing file or creates new one
+   - Same schema maintained as server-side version
+
+2. **Data Persistence**
+   - Database state saved to localStorage on page unload
+   - Option to export database as downloadable file
+   - Database can be reloaded from previous state
+
+3. **Game Module Architecture**
+   - Direct database operations from client-side code
+   - Maintains same data model and relationships
+   - No network requests required
+
+## ES Module Architecture
+
+The project uses modern ES Modules throughout, with the following patterns:
+
+- Named exports for utility classes and functions
+- Default exports for main game classes and algorithms
+- Dynamic imports for algorithm modules
+- Asynchronous database operations
+
+## Game Module Architecture
+
+Each game module follows a consistent architecture:
+
+```
+games/[game-name]/
+  |- game.js             # Main game logic and initialization
+  |- algorithms/         # Algorithm implementations
+  |    |- algorithm1.js
+  |    |- algorithm2.js
+  |- services/           # API service clients for database operations
+  |    |- api.js
+  |- ui/                 # UI components
+       |- index.js
+```
+
+### Knight's Tour Architecture
+
+#### Key Components
+
+1. **KnightsTour Class** (`game.js`)
+   - Core game state management
+   - Move validation
+   - Board state representation
+   - Static initialization
+
+2. **KnightsTourUI Class** (`ui/index.js`)
+   - Board rendering
+   - User interaction handling
+   - Animation control
+   - Algorithm selection
+
+3. **Algorithms**
+   - `backtracking.js`: Backtracking algorithm implementation
+   - `warnsdorff.js`: Warnsdorff's heuristic algorithm implementation
+
+4. **API Service** (`services/api.js`)
+   - `createGameRecord()`: Initialize a new game in the client-side database
+   - `saveAlgorithmPerformance()`: Save algorithm execution metrics
+   - `endGame()`: Save final game state when complete
+
+#### Data Flow
+
+1. **Initialization**:
+   ```
+   Page Load → app.js → SQL.js init → db.js init → KnightsTour.init() → new KnightsTour() → new KnightsTourUI().initialize()
+   ```
+
+2. **Manual Gameplay**:
+   ```
+   User Click → handleCellClick() → game.makeMove() → render()
+   ```
+
+3. **Automatic Solving**:
+   ```
+   Solve Click → handleSolveClick() → game.solve() → import algorithm → animateSolution()
+   ```
+
+4. **Performance Tracking**:
+   ```
+   Algorithm Execution → Performance Metrics → Client-side API Service → SQL.js Database
+   ```
+
+### Database Model - Knight's Tour
+
+The same database schema is maintained but implemented client-side:
+
+#### Game Table
+```sql
+CREATE TABLE games (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  game_type VARCHAR(50) NOT NULL,
+  player_id INTEGER,
+  settings TEXT,
+  status VARCHAR(20),
+  start_time DATETIME,
+  end_time DATETIME,
+  duration_seconds INTEGER,
+  FOREIGN KEY (player_id) REFERENCES players(id)
+);
+```
+
+#### Knights Tour Table
+```sql
+CREATE TABLE knights_tour (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  game_id INTEGER NOT NULL,
+  start_position TEXT,
+  move_sequence TEXT,
+  algorithm_type VARCHAR(50),
+  execution_time FLOAT,
+  FOREIGN KEY (game_id) REFERENCES games(id)
+);
+```
+
+## Deployment Architecture
+
+With the migration to fully client-side architecture, deployment is radically simplified:
+
+1. **Static File Hosting**
+   - Any web server can host the application files (Apache, Nginx, etc.)
+   - CDN deployment is possible for all assets
+   - No Node.js/Express server required
+
+2. **Client-Side Performance Optimization**
+   - Minified and bundled JavaScript assets
+   - Optimized SQL.js loading
+   - WebAssembly usage for SQLite database
+   - Lazy loading of algorithm modules
+
+3. **Database Backup Strategy**
+   - Local browser storage for session persistence
+   - Optional database export/import functionality
+   - Automatic backup on page unload
+
+## Performance Optimization Strategies
+
+1. **Dynamic Algorithm Import**
+   - Lazy loading of algorithm modules
+   - Import only the selected algorithm
+
+2. **Animation Optimization**
+   - Throttled rendering
+   - Cached DOM elements
+   - requestAnimationFrame usage
+
+3. **Database Optimizations**
+   - Prepared statements in SQL.js
+   - Batch operations when possible
+   - Cached query results for repeated operations
