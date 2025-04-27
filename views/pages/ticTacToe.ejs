@@ -1,5 +1,3 @@
-<%- contentFor('body') %>
-
 <div class="container game-container">
     <div class="row">
         <div class="col-md-12">
@@ -54,16 +52,11 @@
 </div>
 
 <!-- Initialize game using ES modules -->
+<% contentFor('scripts', function() { %>
 <script type="module">
     import { TicTacToeUI } from '/src/games/ticTacToe/ui/index.js';
     
     document.addEventListener('DOMContentLoaded', async () => {
-        // Load game styles through Vite
-        const gameStyles = document.createElement('link');
-        gameStyles.rel = 'stylesheet';
-        gameStyles.href = '/src/games/ticTacToe/styles/game.css';
-        document.head.appendChild(gameStyles);
-        
         // Get player ID from session or localStorage if available
         const playerId = localStorage.getItem('playerId') || 
                          sessionStorage.getItem('playerId') || 
@@ -73,3 +66,4 @@
         await gameUI.initialize('tic-tac-toe-board', 'tic-tac-toe-controls');
     });
 </script>
+<% }) %>

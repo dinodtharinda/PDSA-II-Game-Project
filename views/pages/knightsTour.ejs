@@ -1,8 +1,5 @@
-<%- contentFor('head') %>
 <% gameStyles = true %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-<%- contentFor('body') %>
 
 <div class="container game-container">
     <div class="row">
@@ -74,14 +71,15 @@
     </div>
 </div>
 
-<!-- Initialize game using ES modules -->
+<% contentFor('scripts', function() { %>
 <script type="module">
+    import { KnightsTour } from '/src/games/knightsTour/game.js';
     import { KnightsTourUI } from '/src/games/knightsTour/ui/index.js';
-    import KnightsTour from '/src/games/knightsTour/game.js';
-    
+
     document.addEventListener('DOMContentLoaded', async () => {
         const game = new KnightsTour();
         const ui = new KnightsTourUI();
         await ui.initialize(game);
     });
 </script>
+<% }) %>

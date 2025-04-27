@@ -1,6 +1,4 @@
 import Timer from '../utils/timer.js';
-import logger from '../utils/logger.js';
-import { validateGameMove } from '../utils/validator.js';
 
 export default class BaseGame {
   constructor(playerId) {
@@ -14,7 +12,7 @@ export default class BaseGame {
   async initialize() {
     this.gameState = 'in_progress';
     this.timer.start();
-    logger.info(`Game initialized for player ${this.playerId}`);
+    console.log(`BaseGame initialized for player ${this.playerId}`);
   }
 
   async makeMove(move) {
@@ -47,7 +45,7 @@ export default class BaseGame {
     this.gameState = 'completed';
     this.winner = result;
     const duration = this.timer.stop();
-    logger.info(`Game ended for player ${this.playerId} with result: ${result} in ${duration}ms`);
+    console.log(`BaseGame ended for player ${this.playerId} with result: ${result} in ${duration}ms`);
   }
 
   // Methods to be implemented by specific games

@@ -4,7 +4,7 @@
  */
 import logger from '../utils/logger.js';
 import { getSequelize } from '../config/db.js';
-import { getAlgorithmStats } from '../utils/performanceTracker.js';
+import { getAlgorithmStats as getAlgStats } from '../utils/performanceTracker.js';
 
 // Get overview statistics
 export const getOverviewStats = async (req, res, next) => {
@@ -203,7 +203,7 @@ export const getAlgorithmStats = async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid game type' });
     }
     
-    const stats = await getAlgorithmStats(gameType, algorithm);
+    const stats = await getAlgStats(gameType, algorithm);
     res.json(stats);
   } catch (err) {
     logger.error(`Error getting algorithm stats: ${err.message}`);

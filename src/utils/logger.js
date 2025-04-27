@@ -1,11 +1,11 @@
-import winston from 'winston';
+import * as winston from 'winston'; // Use namespace import
 import 'winston-daily-rotate-file';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const { createLogger, format, transports } = winston;
+const { createLogger, format, transports } = winston; // Access methods via the winston namespace
 const { combine, timestamp, printf, colorize } = format;
 
 const logFormat = printf(({ level, message, timestamp }) => {

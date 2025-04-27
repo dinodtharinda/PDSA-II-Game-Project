@@ -76,13 +76,6 @@ export const initModel = async () => {
   return Performance;
 };
 
-// Initialize immediately if not in a test environment
-if (process.env.NODE_ENV !== 'test') {
-  initModel().catch(error => {
-    console.error('Failed to initialize Performance model:', error);
-  });
-}
-
 // Associate with Game model
 export const associate = models => {
   const Performance = models.Performance || global.Performance;

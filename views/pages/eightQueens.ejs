@@ -1,4 +1,3 @@
-<%- contentFor('body') %>
 <% gameStyles = true %>
 
 <div class="container game-container">
@@ -55,12 +54,13 @@
     </div>
 </div>
 
-<!-- Initialize game using ES modules -->
+<% contentFor('scripts', function() { %>
 <script type="module">
-    import { EightQueensUI } from '/src/games/eightQueens/ui/index.js';
-    
+    import EightQueensUI from '/src/games/eightQueens/ui/index.js';
+
     document.addEventListener('DOMContentLoaded', async () => {
         const gameUI = new EightQueensUI();
         await gameUI.initialize('queens-board', 'queens-controls');
     });
 </script>
+<% }) %>

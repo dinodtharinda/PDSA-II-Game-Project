@@ -6,8 +6,15 @@ import gameExport from './game.js';
 import playerExport from './player.js';
 import performanceExport from './performance.js';
 
-// Export the initialization functions
+// Keep track of initialized models
+let initializedModels = null;
+
+// Export the initialization function
 export const initModels = async () => {
+  if (initializedModels) {
+    return initializedModels; // Return cached models if already initialized
+  }
+
   // Initialize all models
   const Player = await playerExport.initModel();
   const Game = await gameExport.initModel();
@@ -25,18 +32,6 @@ export const initModels = async () => {
   gameExport.associate(models);
   performanceExport.associate(models);
 
+  initializedModels = models; // Cache the initialized models
   return models;
-};
-
-// For backward compatibility with code that expects immediate model access
-export const Game = gameExport;
-export const Player = playerExport;
-export const Performance = performanceExport;
-
-// Export a default object for convenient imports
-export default {
-  initModels,
-  Game: gameExport,
-  Player: playerExport,
-  Performance: performanceExport
 };

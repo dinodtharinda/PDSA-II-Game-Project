@@ -53,6 +53,9 @@ export class KnightsTourUI {
             throw new Error(`Controls element with ID "${controlsElementId}" not found`);
         }
         
+        // Clear controls container before adding new ones
+        controlsElement.innerHTML = ''; 
+
         this.createBoardSizeSelector(controlsElement);
         this.createAlgorithmSelector(controlsElement);
         this.createSpeedControl(controlsElement);
@@ -99,6 +102,7 @@ export class KnightsTourUI {
             
             // Import the selected algorithm dynamically
             const algorithmModule = await import(
+                /* @vite-ignore */ // Add ignore comment to suppress warning and potentially fix analysis
                 this.selectedAlgorithm === 'backtracking' 
                 ? '../algorithms/backtracking.js' 
                 : '../algorithms/warnsdorff.js'
@@ -467,10 +471,3 @@ export class KnightsTourUI {
         containerElement.appendChild(buttonContainer);
     }
 }
-
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    const game = new KnightsTour();
-    const ui = new KnightsTourUI();
-    ui.initialize(game);
-});

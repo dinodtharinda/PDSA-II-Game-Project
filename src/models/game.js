@@ -107,13 +107,6 @@ export const initModel = async () => {
   return Game;
 };
 
-// Initialize immediately if not in a test environment
-if (process.env.NODE_ENV !== 'test') {
-  initModel().catch(error => {
-    console.error('Failed to initialize Game model:', error);
-  });
-}
-
 // Associate with Player model
 export const associate = models => {
   const Game = models.Game || global.Game;

@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
-const crypto = require('crypto');
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const SALT_ROUNDS = 10;
 const TOKEN_BYTES = 32;
@@ -109,4 +109,4 @@ class Security {
   }
 }
 
-module.exports = Security;
+export default Security;

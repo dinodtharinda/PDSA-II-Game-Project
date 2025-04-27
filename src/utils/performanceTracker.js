@@ -2,7 +2,7 @@
  * Performance tracking utility for game modules
  * Provides consistent tracking of algorithm performance metrics across different games
  */
-import { Performance } from '../models/index.js';
+import { initModels } from '../models/index.js'; // Import initModels
 import logger from './logger.js';
 
 /**
@@ -19,6 +19,10 @@ import logger from './logger.js';
  */
 export const trackPerformance = async (options) => {
   try {
+    // Get models
+    const models = await initModels();
+    const Performance = models.Performance;
+
     // Validate required options
     const requiredFields = ['gameId', 'algorithmName', 'executionTime'];
     for (const field of requiredFields) {
@@ -27,7 +31,7 @@ export const trackPerformance = async (options) => {
       }
     }
 
-    // Create performance record
+    // Create performance record using the obtained Performance model
     const performanceRecord = await Performance.create({
       game_id: options.gameId,
       algorithm_name: options.algorithmName,
@@ -60,7 +64,9 @@ export const trackPerformance = async (options) => {
  */
 export const updateGameWithAlgorithmResults = async (options) => {
   try {
-    const { Game } = await import('../models/index.js');
+    // Get models
+    const models = await initModels();
+    const Game = models.Game;
     
     // Update the game record
     const game = await Game.findByPk(options.gameId);

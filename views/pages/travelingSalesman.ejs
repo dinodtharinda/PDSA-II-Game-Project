@@ -85,6 +85,7 @@
 </div>
 
 <!-- Custom styles for TSP game -->
+<% contentFor('styles', function() { %>
 <style>
     .city-node {
         display: flex;
@@ -168,10 +169,10 @@
         }
     }
 </style>
-
-<%- contentFor('body') %>
+<% }) %>
 
 <!-- Initialize game using ES modules -->
+<% contentFor('scripts', function() { %>
 <script type="module">
     import TSPUI from '/src/games/tsp/ui/index.js';
     
@@ -195,3 +196,4 @@
         }
     });
 </script>
+<% }) %>

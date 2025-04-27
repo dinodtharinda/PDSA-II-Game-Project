@@ -28,13 +28,20 @@ router.get('/eight-queens', (req, res) => {
 });
 
 router.get('/knights-tour', (req, res) => {
-  res.render('pages/knightsTour', { title: 'Knight\'s Tour Problem', path: '/knights-tour' });
+  res.render('pages/knightsTour', { 
+    title: 'Knight\'s Tour Problem', 
+    path: '/knights-tour',
+    layout: 'layouts/main', // Keep layout explicit
+    pageScripts: [
+      '/src/games/knightsTour/gameLoader.js' // Use a dedicated loader script
+    ]
+  });
 });
 
-// Stats page
-router.get('/stats', (req, res) => {
-  res.render('pages/stats', { title: 'Game Statistics', path: '/stats' });
-});
+// Stats page - Removed for now as the view is missing
+// router.get('/stats', (req, res) => {
+//   res.render('pages/stats', { title: 'Game Statistics', path: '/stats' });
+// });
 
 // Player registration & login
 router.get('/login', (req, res) => {

@@ -12,54 +12,22 @@
   
   <!-- Base styles -->
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/games.css">
   
-  <% if (typeof gameStyles !== 'undefined' && gameStyles) { %>
-    <!-- Game-specific styles will be loaded by the game module -->
-  <% } %>
-  
-  <%- defineContent('head') %>
+  <%# Render content defined in the 'head' block from page templates %>
 </head>
 <body>
   <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="/">Algorithm Games</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/games/tic-tac-toe">Tic Tac Toe</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/games/tower-of-hanoi">Tower of Hanoi</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/games/eight-queens">Eight Queens</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/games/knights-tour">Knight's Tour</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/games/traveling-salesman">Traveling Salesman</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <%- include('../partials/navigation') %>
 
   <!-- Main Content -->
-  <main class="main-content">
-    <%- defineContent('body') %>
+  <main class="main-content container my-4">
+    <%# Render the main body content from the page template %>
+    <%- body %> 
   </main>
 
   <!-- Footer -->
-  <footer class="footer mt-auto py-3 bg-light">
-    <div class="container text-center">
-      <span class="text-muted">Algorithm Games &copy; 2025</span>
-    </div>
-  </footer>
+  <%- include('../partials/footer') %>
 
   <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -69,24 +37,14 @@
     <script type="module" src="/@vite/client"></script>
   <% } %>
   
-  <!-- ES Module Support -->
-  <script type="importmap">
-    {
-      "imports": {
-        "utils/": "/js/utils/",
-        "games/": "/js/games/"
-      }
-    }
-  </script>
-  
-  <% if (typeof gameScripts !== 'undefined' && gameScripts) { %>
-    <!-- Game-specific scripts -->
-    <% gameScripts.forEach(script => { %>
-      <script type="module" src="<%= script %>"></script>
+  <%# Render scripts defined using contentFor('scripts') - Keep for other pages %>
+  <%- defineContent('scripts') %> 
+
+  <%# Render page-specific scripts passed from the route %>
+  <% if (typeof pageScripts !== 'undefined' && Array.isArray(pageScripts)) { %>
+    <% pageScripts.forEach(scriptPath => { %>
+      <script type="module" src="<%= scriptPath %>"></script>
     <% }); %>
   <% } %>
-  
-  <!-- Optional dynamic scripts -->
-  <%- defineContent('scripts') %>
 </body>
 </html>
