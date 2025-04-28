@@ -6,10 +6,12 @@ Last updated: April 28, 2025
 
 ## Critical Tasks (Due Immediately)
 
-### Implement Travel Salesman Problem Game
--  **Description**: Implement the Travel Salesman Problem game Completely. identify common CSS components and move them to style.css. only move unique CSS components game's index.js file.
--  **Status**: Not Started
--  **Priority**: Critical
+### Complete Individual Reports
+- **Description:** Each team member must complete their individual report based on the client-side implementation.
+- **Status:** In Progress
+- **Priority:** High
+- **Due Date:** April 30, 2025
+- **Assigned To:** Adithya
 
 ## Completed Tasks
 
