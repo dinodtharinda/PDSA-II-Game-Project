@@ -1,0 +1,1328 @@
+/* Knight's Tour Game Styles */
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 640px;
+    margin: 0 auto;
+    background-color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative; /* For animations overlay */
+}
+
+.chess-board .cell {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.chess-board .cell.light {
+    background-color: #f0d9b5;
+}
+
+.chess-board .cell.dark {
+    background-color: #b58863;
+}
+
+.chess-board .cell:hover:not(.visited) {
+    transform: scale(0.95);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.chess-board .cell.valid-move {
+    background-color: rgba(76, 175, 80, 0.25);
+    box-shadow: inset 0 0 0 3px rgba(76, 175, 80, 0.5);
+    animation: pulse 1.5s infinite;
+}
+
+.chess-board .cell.valid-move:hover {
+    background-color: rgba(76, 175, 80, 0.4);
+    transform: scale(0.95);
+}
+
+.chess-board .cell.visited {
+    opacity: 0.9;
+    position: relative;
+}
+
+.chess-board .cell.visited::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(255, 0, 25, 0.7); /* Red tint with 70% opacity */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.chess-board .cell.start {
+    box-shadow: inset 0 0 0 3px #1976d2;
+}
+
+.chess-board .cell.start::after {
+    background-color: rgba(0, 123, 255, 0.25); /* Blue tint for start position */
+}
+
+.chess-board .cell.current {
+    box-shadow: inset 0 0 8px rgba(255, 152, 0, 0.7);
+}
+
+.chess-board .cell.current::after {
+    background-color: rgba(255, 193, 7, 0.3); /* Yellow tint for current position */
+}
+
+.move-number {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.coordinate {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    font-size: 10px;
+    opacity: 0.6;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.knight {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.knight i {
+    font-size: 2.5rem;
+    color: #333;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.move-indicator {
+    position: absolute;
+    width: 30%;
+    height: 30%;
+    background-color: rgba(76, 175, 80, 0.3);
+    border-radius: 50%;
+    z-index: 1;
+    animation: indicatorPulse 1.5s infinite;
+}
+
+/* Animation for valid moves */
+@keyframes pulse {
+    0% { box-shadow: inset 0 0 0 3px rgba(76, 175, 80, 0.3); }
+    50% { box-shadow: inset 0 0 0 3px rgba(76, 175, 80, 0.7); }
+    100% { box-shadow: inset 0 0 0 3px rgba(76, 175, 80, 0.3); }
+}
+
+@keyframes indicatorPulse {
+    0% { transform: scale(0.8); opacity: 0.4; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(0.8); opacity: 0.4; }
+}
+
+/* Path trace animation */
+@keyframes pathTrace {
+    from { stroke-dashoffset: 1000; }
+    to { stroke-dashoffset: 0; }
+}
+
+.solving {
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.solving::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.performance-metrics {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.metrics-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+    text-align: center;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 5px;
+}
+
+.algorithm-metrics {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 5px 0;
+}
+
+.metrics-label {
+    font-weight: bold;
+    color: #495057;
+}
+
+/* Slider styling for animation speed */
+input[type="range"].form-range {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #dee2e6;
+    outline: none;
+    margin: 10px 0;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"].form-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.speed-value {
+    text-align: center;
+    font-weight: bold;
+    color: #495057;
+    margin-top: 5px;
+}
+
+/* Enhanced game controls */
+.game-controls {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.game-controls:hover {
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+}
+
+.control-group {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.control-group:last-child {
+    border-bottom: none;
+}
+
+.control-group label {
+    font-weight: bold;
+    color: #495057;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Buttons container */
+.buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Button styles */
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    min-width: 120px;
+}
+
+.btn i {
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Status and messages */
+.game-status {
+    background: #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+    .chess-board {
+        max-width: 100%;
+    }
+    
+    .move-number {
+        font-size: 10px;
+        width: 18px;
+        height: 18px;
+    }
+    
+    .coordinate {
+        font-size: 8px;
+    }
+    
+    .buttons-container {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .control-group {
+        margin-bottom: 15px;
+    }
+    
+    .knight i {
+        font-size: 1.8rem;
+    }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 480px) {
+    .chess-board {
+        gap: 0;
+    }
+    
+    .move-number {
+        font-size: 9px;
+        width: 16px;
+        height: 16px;
+        top: 2px;
+        right: 2px;
+    }
+    
+    .coordinate {
+        display: none;
+    }
+    
+    .game-status,
+    .message-area {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .knight i {
+        font-size: 1.5rem;
+    }
+}
+
+/* Eight Queens Styles */
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.game-board {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    min-height: 400px;
+    padding: 20px;
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px; /* Match Knight's Tour */
+    background: #333; /* Match Knight's Tour background */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Match Knight's Tour shadow */
+    border-radius: 4px; /* Match Knight's Tour radius */
+    overflow: hidden; /* Match Knight's Tour overflow */
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.chessboard .cell {
+    position: relative; /* Keep relative positioning for the absolute child */
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    background-color: #f0d9b5;
+    aspect-ratio: 1;
+    display: flex; /* Use flex to center the icon inside */
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow: hidden; /* Keep overflow hidden */
+}
+
+.chessboard .cell.dark {
+    background-color: #b58863;
+}
+
+.chessboard .cell.attacked {
+    position: relative;
+}
+
+.chessboard .cell.attacked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* Handle hover states differently for touch and non-touch devices */
+@media (hover: hover) {
+    .chessboard .cell:hover:not(.queen) {
+        transform: scale(0.95);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .chessboard .cell:active:not(.queen) {
+        transform: scale(0.95);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 10px;
+    }
+
+    .game-board {
+        min-height: 300px;
+        padding: 10px;
+    }
+
+    .chessboard {
+        max-width: 100%;
+        padding: 4px;
+        gap: 1px;
+    }
+
+    .chessboard .cell.queen::before {
+        font-size: min(7vw, 2.5rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .game-board {
+        padding: 5px;
+    }
+
+    .chessboard {
+        padding: 2px;
+        gap: 1px;
+    }
+
+    .chessboard .cell.queen::before {
+        font-size: min(6vw, 2rem);
+    }
+}
+
+/* Game controls styles */
+.game-controls {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+/* Game status styles */
+.game-status {
+    background: #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+/* Statistics section styles */
+.stats-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+/* Footer styles */
+.footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: 40px;
+}
+
+/* Route visualization styles */
+.route-line {
+    stroke-width: 3px;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.route-line.user-route {
+    stroke: #28a745;
+    stroke-dasharray: 5,5;
+}
+
+.route-line.nn-route {
+    stroke: #007bff;
+}
+
+.route-line.dp-route {
+    stroke: #dc3545;
+}
+
+.route-line.ga-route {
+    stroke: #28a745;
+}
+
+.city-animation {
+    animation: cityPulse 1.5s infinite;
+}
+
+@keyframes cityPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Algorithm selection buttons */
+.algorithm-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-algorithm {
+    padding: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-algorithm i {
+    font-size: 1.2rem;
+}
+
+.btn-algorithm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-nn {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-dp {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-ga {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-compare {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Performance badge */
+.performance-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.badge-fast {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.badge-slow {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Results visualization */
+.visualization-controls {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.complexity-info {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.complexity-info p {
+    margin: 5px 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .canvas-container {
+        height: 400px;
+    }
+    
+    .canvas-info {
+        max-width: 250px;
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    .city-node {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .city-node.home-city {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .algorithm-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-algorithm {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .visualization-controls {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .canvas-container {
+        height: 300px;
+    }
+    
+    .canvas-info {
+        left: 5px;
+        top: 5px;
+        max-width: 200px;
+        font-size: 11px;
+    }
+    
+    .city-node {
+        width: 35px;
+        height: 35px;
+        margin: 3px;
+    }
+    
+    .city-node.home-city {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* ADD a new rule to style the actual icon element */
+.chessboard .cell .queen i { /* Target the <i> tag inside the .queen div */
+    font-size: min(5.5vw, 2.5rem); /* Keep size adjustment */
+    line-height: 1; /* Keep for vertical alignment consistency */
+    color: #333; 
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5); 
+}
+
+.chessboard .cell .queen {
+    position: absolute;
+    width: 70%; /* Match knight's size */
+    height: 70%; /* Match knight's size */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex; /* Use flex to center the icon inside */
+    align-items: center;
+    justify-content: center;
+    z-index: 2; /* Ensure it's above other cell content/pseudo-elements */
+    pointer-events: none; /* Prevent interfering with cell clicks */
+}
+
+/* Knight's Tour Styles */
+/* Increase specificity and reset padding */
+#knights-tour-board .chess-board {
+    display: grid;
+    /* grid-template-columns: repeat(8, 1fr); */ /* Set dynamically in JS */
+    gap: 1px; /* Adjust gap between cells */
+    padding: 0; /* Override .game-board padding */
+    border: none; /* Override .game-board border if any */
+    background-color: #333; /* Dark background for gaps */
+    width: 100%;
+    max-width: 600px; /* Or match desired max-width */
+    aspect-ratio: 1 / 1;
+    margin: 0 auto; /* Center the board */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Eight Queens Styles */
+/* Increase specificity and reset padding */
+#eight-queens-board .chessboard { /* Use ID for specificity */
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px; /* Match Knight's Tour */
+    padding: 0; /* Override .game-board padding */
+    border: none; /* Override .game-board border if any */
+    background-color: #333; /* Match Knight's Tour background */
+    width: 100%;
+    max-width: 600px; /* Match Knight's Tour */
+    aspect-ratio: 1 / 1;
+    margin: 0 auto; /* Center the board */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Match Knight's Tour shadow */
+    border-radius: 4px; /* Match Knight's Tour radius */
+    overflow: hidden; /* Match Knight's Tour overflow */
+}
+
+/* Ensure cell styles are also specific if needed, though likely okay */
+#eight-queens-board .chessboard .cell {
+    position: relative; 
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow: hidden; 
+    padding: 0; /* Ensure no padding */
+}
+
+#eight-queens-board .chessboard .cell.light {
+    background-color: #f0d9b5; /* Match Knight's Tour */
+}
+
+#eight-queens-board .chessboard .cell.dark {
+    background-color: #b58863; /* Match Knight's Tour */
+}
+
+/* Eight Queens specific rules for the renamed elements */
+#eight-queens-board .chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    padding: 0; 
+    border: none;
+    background-color: #333;
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Eight Queens cells use Knight's Tour styling */
+#eight-queens-board .chess-board .cell {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* Eight Queens: Style the queen icon inside the knight container */
+#eight-queens-board .chess-board .cell .knight i.fa-chess-queen {
+    font-size: 2.5rem;
+    color: #333;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Styles to handle the attacked state for Eight Queens */
+#eight-queens-board .chess-board .cell.attacked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* Tic-Tac-Toe Game Styles */
+.tic-tac-toe-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    background-color: #333;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 100%; /* Make it responsive */
+    max-width: 500px;
+    margin: 0 auto;
+    aspect-ratio: 1/1; /* Keep it square */
+}
+
+.tic-tac-toe-cell {
+    background-color: #f8f9fa;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tic-tac-toe-cell:hover:not(.x-mark):not(.o-mark) {
+    background-color: #e9ecef;
+    transform: scale(0.95);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.tic-tac-toe-cell.x-mark {
+    background-color: rgba(255, 76, 76, 0.1);
+}
+
+.tic-tac-toe-cell.o-mark {
+    background-color: rgba(29, 127, 255, 0.1);
+}
+
+.game-mark {
+    font-size: 2rem;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transform: scale(0.5);
+    animation: mark-appear 0.3s forwards;
+}
+
+.x-mark .game-mark {
+    color: #ff4c4c;
+}
+
+.o-mark .game-mark {
+    color: #1d7fff;
+}
+
+@keyframes mark-appear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Game status styling */
+#game-message {
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#game-message::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(to right, #6c757d, transparent);
+}
+
+#game-message.text-success {
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+#game-message.text-success::before {
+    background: linear-gradient(to right, #28a745, rgba(40, 167, 69, 0.2));
+}
+
+#game-message.text-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+#game-message.text-danger::before {
+    background: linear-gradient(to right, #dc3545, rgba(220, 53, 69, 0.2));
+}
+
+#game-message.text-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+#game-message.text-warning::before {
+    background: linear-gradient(to right, #ffc107, rgba(255, 193, 7, 0.2));
+}
+
+/* Win animations */
+.player-win {
+    animation: winner-pulse 2s ease;
+}
+
+.computer-win {
+    animation: loser-pulse 2s ease;
+}
+
+@keyframes winner-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(40, 167, 69, 0);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.6);
+    }
+}
+
+@keyframes loser-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(220, 53, 69, 0);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
+    }
+}
+
+/* Algorithm performance card styling */
+#algorithm-performance {
+    padding: 10px;
+    border-radius: 8px;
+}
+
+#algorithm-performance p {
+    margin-bottom: 8px;
+}
+
+#algorithm-performance ul {
+    padding-left: 20px;
+}
+
+#algorithm-performance li {
+    margin-bottom: 5px;
+}
+
+/* SVG animations for Tic-Tac-Toe marks */
+.mark-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.mark-path {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: dash 0.5s ease-in-out forwards;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.o-svg circle {
+    animation: dash 0.7s ease-in-out forwards, fill-fade 0.5s ease-in-out 0.5s forwards;
+}
+
+@keyframes fill-fade {
+    from {
+        fill: rgba(29, 127, 255, 0);
+    }
+    to {
+        fill: rgba(29, 127, 255, 0.1);
+    }
+}
+
+/* Button click animation */
+.btn-click-effect {
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.2s ease;
+}
+
+/* Algorithm change alert fade out animation */
+.algorithm-change-alert {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.algorithm-change-alert.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Enhanced responsive styles for Tic-Tac-Toe */
+.tic-tac-toe-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.game-controls-card,
+.game-status-card {
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+/* Improved responsive styles */
+@media (max-width: 992px) {
+    .tic-tac-toe-board {
+        max-width: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tic-tac-toe-board {
+        width: 100%;
+        max-width: 400px;
+        gap: 5px;
+        padding: 8px;
+    }
+
+    .game-mark {
+        font-size: 1.8rem;
+    }
+    
+    .mark-svg path,
+    .mark-svg circle {
+        stroke-width: 10;
+    }
+    
+    .game-controls-card,
+    .game-status-card {
+        margin-top: 1.5rem;
+    }
+    
+    #game-message {
+        font-size: 1.1rem;
+        padding: 10px;
+    }
+    
+    .game-title {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .game-description {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .col-md-8,
+    .col-md-4 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .tic-tac-toe-board {
+        max-width: 320px;
+        gap: 4px;
+        padding: 6px;
+    }
+    
+    .game-mark {
+        font-size: 1.5rem;
+    }
+    
+    .mark-svg path,
+    .mark-svg circle {
+        stroke-width: 8;
+    }
+    
+    .game-title {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .game-description {
+        font-size: 0.9rem;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .tic-tac-toe-board {
+        max-width: 280px;
+        gap: 3px;
+        padding: 5px;
+    }
+    
+    .game-mark {
+        font-size: 1.2rem;
+    }
+    
+    .mark-svg path,
+    .mark-svg circle {
+        stroke-width: 6;
+    }
+    
+    #game-message {
+        font-size: 1rem;
+        padding: 8px;
+    }
+    
+    .card-body {
+        padding: 0.5rem;
+    }
+    
+    .algorithm-options .form-check {
+        margin-bottom: 0.5rem;
+    }
+    
+    .algorithm-options .badge {
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* Additional styles for Tic-Tac-Toe */
+.tic-tac-toe-board {
+  background: #333333; /* Dark background instead of pattern image */
+}
+
+/* Enhanced winning cell highlight */
+.tic-tac-toe-cell.winning-cell {
+  box-shadow: inset 0 0 15px rgba(40, 167, 69, 0.8) !important;
+  border: 2px solid #28a745 !important;
+  background-color: rgba(40, 167, 69, 0.2) !important;
+  z-index: 1;
+  position: relative;
+  animation: winning-pulse 1s infinite alternate !important;
+}
+
+@keyframes winning-pulse {
+  0% { box-shadow: inset 0 0 10px rgba(40, 167, 69, 0.5); }
+  100% { box-shadow: inset 0 0 20px rgba(40, 167, 69, 1); }
+}
+
+/* Make game message more prominent */
+#game-message {
+  font-size: 1.25rem !important;
+  font-weight: bold !important;
+  padding: 15px !important;
+  margin: 15px 0 !important;
+  border-radius: 8px !important;
+  text-align: center !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+#game-message.alert-success {
+  background-color: rgba(40, 167, 69, 0.2) !important;
+  border: 2px solid #28a745 !important;
+  color: #155724 !important;
+}
+
+#game-message.alert-danger {
+  background-color: rgba(220, 53, 69, 0.2) !important;
+  border: 2px solid #dc3545 !important;
+  color: #721c24 !important;
+}
+
+#game-message.alert-warning {
+  background-color: rgba(255, 193, 7, 0.2) !important;
+  border: 2px solid #ffc107 !important;
+  color: #856404 !important;
+}
+
+/* Game icons using Font Awesome instead of SVG files */
+.game-icon {
+  font-size: 2em;
+  margin-bottom: 15px;
+}

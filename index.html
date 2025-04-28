@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDSA-II Game Project</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link href="/css/style.css" rel="stylesheet">
+  <link href="/css/games.css" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/svgs/solid/gamepad.svg">
+  
+  <!-- Import Map for Module Resolution -->
+  <script type="importmap">
+    {
+      "imports": {
+        "/js/games/tsp/algorithms/": "/js/games/tsp/algorithms/",
+        "/js/games/tsp/": "/js/games/tsp/",
+        "/js/games/": "/js/games/",
+        "/js/": "/js/"
+      }
+    }
+  </script>
+</head>
+<body class="d-flex flex-column h-100">
+  <!-- Navbar: Moved here from app.js -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#" onclick="window.router.navigate('/'); return false;">PDSA-II Game Project</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="window.router.navigate('/home'); return false;">Home</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Games
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/tic-tac-toe'); return false;">Tic-Tac-Toe</a></li>
+              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/traveling-salesman'); return false;">Traveling Salesman</a></li>
+              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/tower-of-hanoi'); return false;">Tower of Hanoi</a></li>
+              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/eight-queens'); return false;">Eight Queens</a></li>
+              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/knights-tour'); return false;">Knight's Tour</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="window.router.navigate('/stats'); return false;">Statistics</a>
+          </li>
+        </ul>
+        <div class="d-flex">
+            <button class="btn btn-outline-light me-2" type="button" onclick="window.router.navigate('/login'); return false;">Login</button>
+            <button class="btn btn-primary" type="button" onclick="window.router.navigate('/register'); return false;">Register</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- App root element: Content will be injected here -->
+  <main id="app-root" class="flex-shrink-0"></main>
+
+  <!-- Footer: Moved here from app.js -->
+  <footer class="footer mt-auto py-3 bg-dark text-white">
+    <div class="container text-center">
+      <span id="footer-text">© 2025 PDSA-II Game Project. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- SQL.js initialization -->
+  <script>
+    function loadSqlJs() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '/js/lib/sql-wasm.js';
+        script.onload = resolve;
+        script.onerror = () => {
+          console.warn('Failed to load SQL.js, application will work with reduced functionality');
+          resolve();
+        };
+        document.head.appendChild(script);
+      });
+    }
+  </script>
+  
+  <!-- App initialization -->
+  <script type="module">
+    import logger from './js/utils/logger.js';
+    
+    // Log initialization start
+    console.log('Application initialization started');
+    
+    // Load SQL.js first if available
+    try {
+      await loadSqlJs();
+    } catch (e) {
+      console.warn('SQL.js loading skipped or failed:', e);
+    }
+    
+    // Then import main modules
+    try {
+      const [routerModule, appModule] = await Promise.all([
+        import('./js/router.js'),
+        import('./js/app.js')
+      ]);
+      
+      const router = routerModule.default;
+      const app = appModule.default;
+      
+      console.log('Modules loaded successfully');
+      
+      // Initialize app first (which will register routes)
+      try {
+        await app.init();
+        console.log('Application initialized successfully');
+        
+        // Then initialize router (which will handle initial path)
+        await router.init();
+        console.log('Router initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize application:', error);
+        document.getElementById('app-root').innerHTML = `
+          <div class="container mt-5">
+            <div class="alert alert-danger">
+              <h4>Application Error</h4>
+              <p>Failed to initialize: ${error.message}</p>
+            </div>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('Failed to load modules:', error);
+      document.getElementById('app-root').innerHTML = `
+        <div class="container mt-5">
+          <div class="alert alert-danger">
+            <h4>Module Loading Error</h4>
+            <p>Failed to load application modules: ${error.message}</p>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+
+  <!-- Dynamically update footer year -->
+  <script>
+    document.getElementById('footer-text').textContent = `© ${new Date().getFullYear()} PDSA-II Game Project. All rights reserved.`;
+  </script>
+</body>
+</html>
