@@ -229,58 +229,68 @@ export default class TSPGame extends BaseGame {
    * @returns {Object} Validation result
    */
   validateUserSolution() {
-    // Check if all selected cities are visited
+    // Check if all cities are visited
     const visitedCities = new Set(this.userPath);
-    const missingCities = this.selectedCities.filter(city => !visitedCities.has(city));
     
-    if (missingCities.length > 0) {
+    // Remove home city from count if it appears twice (at start and end)
+    if (this.userPath[0] === this.homeCity && 
+        this.userPath[this.userPath.length - 1] === this.homeCity) {
+      visitedCities.delete(this.homeCity);
+    }
+    
+    // Check if all cities are visited
+    if (visitedCities.size < this.cities.length) {
       return {
         valid: false,
-        message: `Not all selected cities are visited. Missing: ${missingCities.join(', ')}`
+        reason: 'notAllCitiesVisited',
+        message: 'Not all cities are visited in the path'
       };
     }
     
-    // Check if the path starts and ends with the home city
-    if (this.userPath[0] !== this.homeCity || this.userPath[this.userPath.length - 1] !== this.homeCity) {
+    // Check if path starts at home city
+    if (this.userPath[0] !== this.homeCity) {
       return {
         valid: false,
-        message: `Path must start and end with the home city (${this.homeCity})`
+        reason: 'doesNotStartAtHome',
+        message: `Path must start at home city: ${this.homeCity}`
       };
     }
     
-    // Check if each city (except home) is visited exactly once
-    const cityVisits = {};
-    this.userPath.forEach(city => {
-      cityVisits[city] = (cityVisits[city] || 0) + 1;
-    });
-    
-    // Home city should be visited exactly twice (start and end)
-    if (cityVisits[this.homeCity] !== 2) {
+    // Check if path ends at home city
+    if (this.userPath[this.userPath.length - 1] !== this.homeCity) {
       return {
         valid: false,
-        message: `Home city ${this.homeCity} must be visited exactly twice (start and end)`
+        reason: 'doesNotEndAtHome',
+        message: `Path must end at home city: ${this.homeCity}`
       };
     }
     
-    // All other cities should be visited exactly once
-    const extraVisits = Object.entries(cityVisits)
-      .filter(([city, count]) => city !== this.homeCity && count > 1)
-      .map(([city]) => city);
-    
-    if (extraVisits.length > 0) {
-      return {
-        valid: false,
-        message: `Some cities are visited multiple times: ${extraVisits.join(', ')}`
-      };
+    // Check for duplicated cities (each city should be visited exactly once, except home city)
+    const cityCounts = {};
+    for (const city of this.userPath) {
+      cityCounts[city] = (cityCounts[city] || 0) + 1;
     }
     
-    // Calculate the total distance
+    // Home city can appear twice (start and end)
+    cityCounts[this.homeCity]--;
+    
+    // All other cities must appear exactly once
+    for (const city in cityCounts) {
+      if (cityCounts[city] !== 1) {
+        return {
+          valid: false,
+          reason: 'duplicatedCities',
+          message: `Each city must be visited exactly once, but ${city} is visited ${cityCounts[city]} times`
+        };
+      }
+    }
+    
+    // Valid solution
     const totalDistance = this.calculateDistance(this.userPath);
-    
     return {
       valid: true,
-      distance: totalDistance,
-      message: `Valid solution with total distance: ${totalDistance} km`
+      totalDistance,
+      message: `Valid solution with total distance: ${totalDistance}`
     };
   }
   
