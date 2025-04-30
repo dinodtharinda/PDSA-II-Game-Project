@@ -320,10 +320,12 @@ class App {
       '/games/tic-tac-toe': () => this.loadGameModule('tic-tac-toe'),
       '/games/traveling-salesman': () => this.loadGameModule('traveling-salesman'),
 
-      // Placeholder routes for stats, login, register
-      '/stats': () => this.renderPlaceholder('Statistics'),
-      '/login': () => this.renderPlaceholder('Login'),
-      '/register': () => this.renderPlaceholder('Register')
+      // User authentication routes
+      '/login': () => this.renderLoginPage(),
+      '/register': () => this.renderRegisterPage(),
+
+      // Stats page
+      '/stats': () => this.renderPlaceholder('Statistics')
     };
     
     // Register routes with the router
@@ -460,6 +462,226 @@ class App {
       `;
       // Dispatch event even if loading fails, to update nav link
       document.dispatchEvent(new CustomEvent('router:page-loaded', { detail: { route: window.location.pathname } }));
+    }
+  }
+
+  renderLoginPage() {
+    this.appRoot.innerHTML = `
+      <div class="container mt-5">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">Login</div>
+              <div class="card-body">
+                <form id="loginForm">
+                  <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                <div class="mt-3">
+                  <p>Don't have an account? <a href="#" onclick="window.router.navigate('/register'); return false;">Register here</a></p>
+                </div>
+                <div id="loginMessage" class="mt-3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add event listener for form submission
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const results = window.db.query(
+          'SELECT * FROM players WHERE username = ? AND password = ?',
+          [username, password]
+        );
+        
+        if (results && results.length > 0) {
+          // Store user data in localStorage
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: results[0].id,
+            username: results[0].username
+          }));
+          
+          // Update last login time
+          window.db.execute(
+            'UPDATE players SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+            [results[0].id]
+          );
+          
+          document.getElementById('loginMessage').innerHTML = 
+            '<div class="alert alert-success">Login successful! Redirecting...</div>';
+          
+          // Update UI to show logged in state
+          this.updateAuthUI();
+          
+          // Redirect to home after short delay
+          setTimeout(() => window.router.navigate('/'), 1500);
+        } else {
+          document.getElementById('loginMessage').innerHTML = 
+            '<div class="alert alert-danger">Invalid username or password</div>';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        document.getElementById('loginMessage').innerHTML = 
+          '<div class="alert alert-danger">Error during login: ' + error.message + '</div>';
+      }
+    });
+    
+    // Dispatch page loaded event
+    document.dispatchEvent(new CustomEvent('router:page-loaded', { 
+      detail: { route: '/login' } 
+    }));
+  }
+  
+  renderRegisterPage() {
+    this.appRoot.innerHTML = `
+      <div class="container mt-5">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">Register</div>
+              <div class="card-body">
+                <form id="registerForm">
+                  <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Register</button>
+                </form>
+                <div class="mt-3">
+                  <p>Already have an account? <a href="#" onclick="window.router.navigate('/login'); return false;">Login here</a></p>
+                </div>
+                <div id="registerMessage" class="mt-3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add event listener for form submission
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Form validation
+      if (password !== confirmPassword) {
+        document.getElementById('registerMessage').innerHTML = 
+          '<div class="alert alert-danger">Passwords do not match</div>';
+        return;
+      }
+      
+      try {
+        // Check if username or email already exists
+        const checkExisting = window.db.query(
+          'SELECT * FROM players WHERE username = ? OR email = ?',
+          [username, email]
+        );
+        
+        if (checkExisting && checkExisting.length > 0) {
+          document.getElementById('registerMessage').innerHTML = 
+            '<div class="alert alert-danger">Username or email already exists</div>';
+          return;
+        }
+        
+        // Insert new user
+        window.db.execute(
+          'INSERT INTO players (username, email, password, created_at, verified) VALUES (?, ?, ?, CURRENT_TIMESTAMP, 1)',
+          [username, email, password]
+        );
+        
+        // Get user ID of newly created user
+        const results = window.db.query(
+          'SELECT id FROM players WHERE username = ?',
+          [username]
+        );
+        
+        if (results && results.length > 0) {
+          // Store user data in localStorage
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: results[0].id,
+            username: username
+          }));
+          
+          document.getElementById('registerMessage').innerHTML = 
+            '<div class="alert alert-success">Registration successful! Redirecting...</div>';
+          
+          // Update UI to show logged in state
+          this.updateAuthUI();
+          
+          // Redirect to home after short delay
+          setTimeout(() => window.router.navigate('/'), 1500);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        document.getElementById('registerMessage').innerHTML = 
+          '<div class="alert alert-danger">Error during registration: ' + error.message + '</div>';
+      }
+    });
+    
+    // Dispatch page loaded event
+    document.dispatchEvent(new CustomEvent('router:page-loaded', { 
+      detail: { route: '/register' } 
+    }));
+  }
+  
+  updateAuthUI() {
+    // Get auth buttons container
+    const authContainer = document.querySelector('.navbar .d-flex');
+    if (!authContainer) return;
+    
+    // Check if user is logged in
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    
+    if (currentUser) {
+      // User is logged in, show user info and logout button
+      authContainer.innerHTML = `
+        <span class="navbar-text me-2">
+          Welcome, ${currentUser.username}
+        </span>
+        <button class="btn btn-outline-light" type="button" id="logoutBtn">Logout</button>
+      `;
+      
+      // Add logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        this.updateAuthUI();
+        window.router.navigate('/');
+      });
+    } else {
+      // User is not logged in, show login/register buttons
+      authContainer.innerHTML = `
+        <button class="btn btn-outline-light me-2" type="button" onclick="window.router.navigate('/login'); return false;">Login</button>
+        <button class="btn btn-primary" type="button" onclick="window.router.navigate('/register'); return false;">Register</button>
+      `;
     }
   }
 
