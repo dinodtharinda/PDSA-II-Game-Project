@@ -17,7 +17,7 @@ import * as apiService from './services/api.js';
 class TowerOfHanoi {
     constructor(options = {}) {
         // Set default options
-        this.diskCount = options.diskCount || 3;
+        this.diskCount = options.diskCount || Math.floor(Math.random() * 10) + 1;
         this.pegCount = options.pegCount || 3;
         this.selectedAlgorithm = options.algorithm || 'recursive';
         
