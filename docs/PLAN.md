@@ -279,38 +279,6 @@ games/[game-name]/
    Algorithm Execution → Performance Metrics → Client-side API Service → SQL.js Database
    ```
 
-### Database Model - Knight's Tour
-
-The same database schema is maintained but implemented client-side:
-
-#### Game Table
-```sql
-CREATE TABLE games (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  game_type VARCHAR(50) NOT NULL,
-  player_id INTEGER,
-  settings TEXT,
-  status VARCHAR(20),
-  start_time DATETIME,
-  end_time DATETIME,
-  duration_seconds INTEGER,
-  FOREIGN KEY (player_id) REFERENCES players(id)
-);
-```
-
-#### Knights Tour Table
-```sql
-CREATE TABLE knights_tour (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  game_id INTEGER NOT NULL,
-  start_position TEXT,
-  move_sequence TEXT,
-  algorithm_type VARCHAR(50),
-  execution_time FLOAT,
-  FOREIGN KEY (game_id) REFERENCES games(id)
-);
-```
-
 ## Deployment Architecture
 
 With the migration to fully client-side architecture, deployment is radically simplified:
