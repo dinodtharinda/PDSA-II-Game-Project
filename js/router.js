@@ -36,7 +36,9 @@ class Router {
       'tower-of-hanoi', 
       'eight-queens', 
       'tic-tac-toe', 
-      'traveling-salesman'
+      'traveling-salesman',
+      'login',
+      'register'
     ]);
     
     // Initialize with current URL
@@ -318,6 +320,176 @@ class Router {
             <div id="tsp-results" class="mt-4"></div>
           </div>
         `;
+      case 'login':
+        return `
+          <div class="container mt-5">
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">Login</div>
+                  <div class="card-body">
+                    <form id="loginForm">
+                      <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                    <div class="mt-3">
+                      <p>Don't have an account? <a href="#" onclick="window.router.navigate('/register'); return false;">Register here</a></p>
+                    </div>
+                    <div id="loginMessage" class="mt-3"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <script>
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+              e.preventDefault();
+              const username = document.getElementById('username').value;
+              const password = document.getElementById('password').value;
+              
+              // Simple login using the database
+              try {
+                const result = window.db.query(
+                  'SELECT * FROM players WHERE username = ? AND password = ?',
+                  [username, password]
+                );
+                
+                if (result && result.length > 0) {
+                  // Store logged in user in localStorage
+                  localStorage.setItem('currentUser', JSON.stringify({
+                    id: result[0].id,
+                    username: result[0].username
+                  }));
+                  
+                  // Update last login time
+                  window.db.execute(
+                    'UPDATE players SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+                    [result[0].id]
+                  );
+                  
+                  document.getElementById('loginMessage').innerHTML = 
+                    '<div class="alert alert-success">Login successful! Redirecting...</div>';
+                  
+                  // Redirect to home after short delay
+                  setTimeout(() => window.router.navigate('/'), 1500);
+                } else {
+                  document.getElementById('loginMessage').innerHTML = 
+                    '<div class="alert alert-danger">Invalid username or password</div>';
+                }
+              } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('loginMessage').innerHTML = 
+                  '<div class="alert alert-danger">Error during login. Please try again.</div>';
+              }
+            });
+          </script>
+        `;
+        
+      case 'register':
+        return `
+          <div class="container mt-5">
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">Register</div>
+                  <div class="card-body">
+                    <form id="registerForm">
+                      <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                    <div class="mt-3">
+                      <p>Already have an account? <a href="#" onclick="window.router.navigate('/login'); return false;">Login here</a></p>
+                    </div>
+                    <div id="registerMessage" class="mt-3"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <script>
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+              e.preventDefault();
+              
+              const username = document.getElementById('username').value;
+              const email = document.getElementById('email').value;
+              const password = document.getElementById('password').value;
+              const confirmPassword = document.getElementById('confirmPassword').value;
+              
+              if (password !== confirmPassword) {
+                document.getElementById('registerMessage').innerHTML = 
+                  '<div class="alert alert-danger">Passwords do not match</div>';
+                return;
+              }
+              
+              try {
+                // Check if username or email already exists
+                const checkUser = window.db.query(
+                  'SELECT * FROM players WHERE username = ? OR email = ?', 
+                  [username, email]
+                );
+                
+                if (checkUser && checkUser.length > 0) {
+                  document.getElementById('registerMessage').innerHTML = 
+                    '<div class="alert alert-danger">Username or email already exists</div>';
+                  return;
+                }
+                
+                // Insert new user
+                window.db.execute(
+                  'INSERT INTO players (username, email, password, created_at, verified) VALUES (?, ?, ?, CURRENT_TIMESTAMP, 1)',
+                  [username, email, password]
+                );
+                
+                // Get the user ID
+                const result = window.db.query(
+                  'SELECT id FROM players WHERE username = ?', 
+                  [username]
+                );
+                
+                if (result && result.length > 0) {
+                  // Auto-login the user
+                  localStorage.setItem('currentUser', JSON.stringify({
+                    id: result[0].id,
+                    username: username
+                  }));
+                  
+                  document.getElementById('registerMessage').innerHTML = 
+                    '<div class="alert alert-success">Registration successful! Redirecting...</div>';
+                  
+                  // Redirect to home after short delay
+                  setTimeout(() => window.router.navigate('/'), 1500);
+                }
+              } catch (error) {
+                console.error('Registration error:', error);
+                document.getElementById('registerMessage').innerHTML = 
+                  '<div class="alert alert-danger">Error during registration. Please try again.</div>';
+              }
+            });
+          </script>
+        `;
+        
       default:
         return `
           <div class="container mt-5">

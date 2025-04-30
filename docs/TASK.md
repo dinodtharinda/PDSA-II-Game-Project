@@ -6,12 +6,15 @@ Last updated: April 28, 2025
 
 ## Critical Tasks (Due Immediately)
 
-### Complete Individual Reports
-- **Description:** Each team member must complete their individual report based on the client-side implementation.
-- **Status:** In Progress
-- **Priority:** High
-- **Due Date:** April 30, 2025
-- **Assigned To:** Adithya
+### COMPLETE COURSEWORK Requirements
+-   [x] Implement all game logic and algorithms for the coursework.
+-   [x] Implement all game UI modules.
+-   [x] Implement all game API services.
+-   [] Implement all game database modules.
+-   [x] Implement all game router modules.
+-   [x] Implement all game entry point modules.
+-   [] Implement login and registration modules.
+-   [] Implement all game documentation.
 
 ## Completed Tasks
 

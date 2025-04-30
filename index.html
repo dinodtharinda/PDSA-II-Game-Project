@@ -34,34 +34,37 @@
   <!-- Navbar: Moved here from app.js -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#" onclick="window.router.navigate('/'); return false;">PDSA-II Game Project</a>
+      <a class="navbar-brand" href="#" onclick="navigateTo('/'); return false;">PDSA-II Game Project</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="window.router.navigate('/home'); return false;">Home</a>
+            <a class="nav-link" href="#" onclick="navigateTo('/home'); return false;">Home</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Games
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/tic-tac-toe'); return false;">Tic-Tac-Toe</a></li>
-              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/traveling-salesman'); return false;">Traveling Salesman</a></li>
-              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/tower-of-hanoi'); return false;">Tower of Hanoi</a></li>
-              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/eight-queens'); return false;">Eight Queens</a></li>
-              <li><a class="dropdown-item" href="#" onclick="window.router.navigate('/games/knights-tour'); return false;">Knight's Tour</a></li>
+              <li><a class="dropdown-item" href="#" onclick="navigateTo('/games/tic-tac-toe'); return false;">Tic-Tac-Toe</a></li>
+              <li><a class="dropdown-item" href="#" onclick="navigateTo('/games/traveling-salesman'); return false;">Traveling Salesman</a></li>
+              <li><a class="dropdown-item" href="#" onclick="navigateTo('/games/tower-of-hanoi'); return false;">Tower of Hanoi</a></li>
+              <li><a class="dropdown-item" href="#" onclick="navigateTo('/games/eight-queens'); return false;">Eight Queens</a></li>
+              <li><a class="dropdown-item" href="#" onclick="navigateTo('/games/knights-tour'); return false;">Knight's Tour</a></li>
             </ul>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="window.router.navigate('/stats'); return false;">Statistics</a>
+            <a class="nav-link" href="#" onclick="navigateTo('/stats'); return false;">Statistics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="exportDatabase(); return false;">Export Data</a>
           </li>
         </ul>
         <div class="d-flex">
-            <button class="btn btn-outline-light me-2" type="button" onclick="window.router.navigate('/login'); return false;">Login</button>
-            <button class="btn btn-primary" type="button" onclick="window.router.navigate('/register'); return false;">Register</button>
+            <button class="btn btn-outline-light me-2" type="button" onclick="navigateTo('/login'); return false;">Login</button>
+            <button class="btn btn-primary" type="button" onclick="navigateTo('/register'); return false;">Register</button>
         </div>
       </div>
     </div>
@@ -96,6 +99,37 @@
     }
   </script>
   
+  <!-- Navigation helper function -->
+  <script>
+    function navigateTo(path) {
+      if (window.router) {
+        window.router.navigate(path);
+      } else {
+        console.error('Router not initialized yet');
+        setTimeout(() => {
+          if (window.router) {
+            window.router.navigate(path);
+          } else {
+            alert('Navigation failed. Please try again later.');
+          }
+        }, 500);
+      }
+      return false;
+    }
+  </script>
+  
+  <!-- Export Database Function -->
+  <script>
+    function exportDatabase() {
+      if (window.db && window.db.exportDatabase) {
+        window.db.exportDatabase();
+      } else {
+        console.error('Database export function not available');
+        alert('Database export function is not available. Make sure the database is initialized.');
+      }
+    }
+  </script>
+
   <!-- App initialization -->
   <script type="module">
     import logger from './js/utils/logger.js';

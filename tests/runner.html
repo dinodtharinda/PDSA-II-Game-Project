@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDSA-II Game Project - Unit Tests</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    .test-results {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: monospace;
+    }
+    .test-pass {
+      color: green;
+    }
+    .test-fail {
+      color: red;
+    }
+    .test-summary {
+      font-weight: bold;
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .pass-summary {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .fail-summary {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .mixed-summary {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .log-line {
+      border-bottom: 1px solid #eee;
+      padding: 3px 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>PDSA-II Game Project - Unit Tests</h1>
+    
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>Select tests to run</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <button id="run-all-tests" class="btn btn-success">Run All Tests</button>
+              <hr>
+              <button id="run-tsp-tests" class="btn btn-primary">Run TSP Tests</button>
+              <button id="run-tic-tac-toe-tests" class="btn btn-primary ms-2">Run Tic-Tac-Toe Tests</button>
+              <button id="run-eight-queens-tests" class="btn btn-primary ms-2">Run Eight Queens Tests</button>
+              <button id="run-knights-tour-tests" class="btn btn-primary ms-2">Run Knight's Tour Tests</button>
+              <button id="run-tower-of-hanoi-tests" class="btn btn-primary ms-2">Run Tower of Hanoi Tests</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>Test Results</h5>
+            <button id="clear-results" class="btn btn-sm btn-outline-secondary float-end">Clear Results</button>
+          </div>
+          <div class="card-body">
+            <div id="test-results" class="test-results">
+              <div class="text-center text-muted">
+                <p>Click a button above to run tests</p>
+              </div>
+            </div>
+            <div id="test-summary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- SQL.js initialization -->
+  <script>
+    function loadSqlJs() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '../js/lib/sql-wasm.js';
+        script.onload = () => {
+          console.log('SQL.js loaded');
+          resolve();
+        };
+        script.onerror = () => {
+          console.warn('Failed to load SQL.js, some tests may not work correctly');
+          resolve(); // Resolve anyway to continue
+        };
+        document.head.appendChild(script);
+      });
+    }
+  </script>
+  
+  <script type="module">
+    // Intercept console logs to display in the results div
+    const resultsDiv = document.getElementById('test-results');
+    const summaryDiv = document.getElementById('test-summary');
+    let passCount = 0;
+    let failCount = 0;
+    
+    // Override console methods to capture output
+    const originalConsole = {
+      log: console.log,
+      error: console.error,
+      warn: console.warn,
+      info: console.info
+    };
+    
+    function setupConsoleIntercept() {
+      console.log = function() {
+        originalConsole.log.apply(console, arguments);
+        const message = Array.from(arguments).map(arg => 
+          typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' ');
+        
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        if (message.includes('PASS:')) {
+          div.classList.add('test-pass');
+          passCount++;
+        } else if (message.includes('FAIL:')) {
+          div.classList.add('test-fail');
+          failCount++;
+        }
+        div.textContent = message;
+        resultsDiv.appendChild(div);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight; // Auto-scroll to bottom
+      };
+      
+      console.error = function() {
+        originalConsole.error.apply(console, arguments);
+        const message = Array.from(arguments).map(arg => 
+          typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' ');
+        
+        const div = document.createElement('div');
+        div.className = 'log-line test-fail';
+        div.textContent = 'ERROR: ' + message;
+        resultsDiv.appendChild(div);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight;
+      };
+      
+      console.warn = function() {
+        originalConsole.warn.apply(console, arguments);
+        const message = Array.from(arguments).map(arg => 
+          typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' ');
+        
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        div.style.color = '#856404';
+        div.textContent = 'WARNING: ' + message;
+        resultsDiv.appendChild(div);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight;
+      };
+      
+      console.info = function() {
+        originalConsole.info.apply(console, arguments);
+        const message = Array.from(arguments).map(arg => 
+          typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' ');
+        
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        div.style.color = '#0c5460';
+        div.textContent = 'INFO: ' + message;
+        resultsDiv.appendChild(div);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight;
+      };
+    }
+    
+    // Reset console to original functions
+    function resetConsoleIntercept() {
+      console.log = originalConsole.log;
+      console.error = originalConsole.error;
+      console.warn = originalConsole.warn;
+      console.info = originalConsole.info;
+    }
+    
+    // Clear results
+    document.getElementById('clear-results').addEventListener('click', function() {
+      resultsDiv.innerHTML = '<div class="text-center text-muted"><p>Results cleared</p></div>';
+      summaryDiv.innerHTML = '';
+      passCount = 0;
+      failCount = 0;
+    });
+    
+    // Update summary after tests run
+    function updateSummary() {
+      summaryDiv.innerHTML = '';
+      const total = passCount + failCount;
+      
+      if (total === 0) {
+        return;
+      }
+      
+      const summary = document.createElement('div');
+      summary.className = 'test-summary';
+      
+      if (failCount === 0) {
+        summary.classList.add('pass-summary');
+        summary.textContent = `All tests passed: ${passCount} passed, 0 failed`;
+      } else if (passCount === 0) {
+        summary.classList.add('fail-summary');
+        summary.textContent = `All tests failed: 0 passed, ${failCount} failed`;
+      } else {
+        summary.classList.add('mixed-summary');
+        summary.textContent = `Mixed results: ${passCount} passed, ${failCount} failed`;
+      }
+      
+      summaryDiv.appendChild(summary);
+    }
+    
+    // Test module runner function
+    async function runTestModule(modulePath, testName) {
+      try {
+        // Import test module
+        const testModule = await import(modulePath);
+        
+        if (testModule && testModule.default) {
+          // Run tests
+          await testModule.default();
+          console.log(`${testName} tests completed`);
+        } else {
+          console.error(`Cannot find test function in ${testName} module`);
+        }
+      } catch (moduleError) {
+        console.error(`Could not load ${testName} test module:`, moduleError.message);
+        console.log(`You need to create the ${testName} test file at: ${modulePath}`);
+      }
+    }
+    
+    // Run TSP tests
+    document.getElementById('run-tsp-tests').addEventListener('click', async function() {
+      try {
+        resultsDiv.innerHTML = '<div class="text-center"><p>Running TSP tests...</p></div>';
+        summaryDiv.innerHTML = '';
+        passCount = 0;
+        failCount = 0;
+        
+        setupConsoleIntercept();
+        
+        // First try loading dependencies
+        await loadSqlJs();
+        
+        await runTestModule('../js/games/tsp/tests/tsp.test.js', 'TSP');
+        
+        updateSummary();
+      } catch (error) {
+        console.error('Error running TSP tests:', error);
+        resultsDiv.innerHTML += `<div class="text-danger">Error: ${error.message}</div>`;
+        
+        updateSummary();
+      } finally {
+        resetConsoleIntercept();
+      }
+    });
+    
+    // Run Tic-Tac-Toe tests
+    document.getElementById('run-tic-tac-toe-tests').addEventListener('click', async function() {
+      try {
+        resultsDiv.innerHTML = '<div class="text-center"><p>Running Tic-Tac-Toe tests...</p></div>';
+        summaryDiv.innerHTML = '';
+        passCount = 0;
+        failCount = 0;
+        
+        setupConsoleIntercept();
+        
+        // First try loading dependencies
+        await loadSqlJs();
+        
+        await runTestModule('../js/games/tic-tac-toe/tests/ticTacToe.test.js', 'Tic-Tac-Toe');
+        
+        updateSummary();
+      } catch (error) {
+        console.error('Error running Tic-Tac-Toe tests:', error);
+        resultsDiv.innerHTML += `<div class="text-danger">Error: ${error.message}</div>`;
+        
+        updateSummary();
+      } finally {
+        resetConsoleIntercept();
+      }
+    });
+    
+    // Run Eight Queens tests
+    document.getElementById('run-eight-queens-tests').addEventListener('click', async function() {
+      try {
+        resultsDiv.innerHTML = '<div class="text-center"><p>Running Eight Queens tests...</p></div>';
+        summaryDiv.innerHTML = '';
+        passCount = 0;
+        failCount = 0;
+        
+        setupConsoleIntercept();
+        
+        // First try loading dependencies
+        await loadSqlJs();
+        
+        await runTestModule('../js/games/eight-queens/tests/eightQueens.test.js', 'Eight Queens');
+        
+        updateSummary();
+      } catch (error) {
+        console.error('Error running Eight Queens tests:', error);
+        resultsDiv.innerHTML += `<div class="text-danger">Error: ${error.message}</div>`;
+        
+        updateSummary();
+      } finally {
+        resetConsoleIntercept();
+      }
+    });
+    
+    // Run Knight's Tour tests
+    document.getElementById('run-knights-tour-tests').addEventListener('click', async function() {
+      try {
+        resultsDiv.innerHTML = '<div class="text-center"><p>Running Knight\'s Tour tests...</p></div>';
+        summaryDiv.innerHTML = '';
+        passCount = 0;
+        failCount = 0;
+        
+        setupConsoleIntercept();
+        
+        // First try loading dependencies
+        await loadSqlJs();
+        
+        await runTestModule('../js/games/knights-tour/tests/knightsTour.test.js', 'Knight\'s Tour');
+        
+        updateSummary();
+      } catch (error) {
+        console.error('Error running Knight\'s Tour tests:', error);
+        resultsDiv.innerHTML += `<div class="text-danger">Error: ${error.message}</div>`;
+        
+        updateSummary();
+      } finally {
+        resetConsoleIntercept();
+      }
+    });
+    
+    // Run Tower of Hanoi tests
+    document.getElementById('run-tower-of-hanoi-tests').addEventListener('click', async function() {
+      try {
+        resultsDiv.innerHTML = '<div class="text-center"><p>Running Tower of Hanoi tests...</p></div>';
+        summaryDiv.innerHTML = '';
+        passCount = 0;
+        failCount = 0;
+        
+        setupConsoleIntercept();
+        
+        // First try loading dependencies
+        await loadSqlJs();
+        
+        await runTestModule('../js/games/tower-of-hanoi/tests/towerOfHanoi.test.js', 'Tower of Hanoi');
+        
+        updateSummary();
+      } catch (error) {
+        console.error('Error running Tower of Hanoi tests:', error);
+        resultsDiv.innerHTML += `<div class="text-danger">Error: ${error.message}</div>`;
+        
+        updateSummary();
+      } finally {
+        resetConsoleIntercept();
+      }
+    });
+    
+    // Run All Tests
+    document.getElementById('run-all-tests').addEventListener('click', async function() {
+      try {
+        resultsDiv.innerHTML = '<div class="text-center"><p>Running all tests...</p></div>';
+        summaryDiv.innerHTML = '';
+        passCount = 0;
+        failCount = 0;
+        
+        setupConsoleIntercept();
+        
+        // First try loading dependencies
+        await loadSqlJs();
+        
+        // Run all tests in sequence
+        console.log('Running all game tests sequentially');
+        
+        await runTestModule('../js/games/tsp/tests/tsp.test.js', 'TSP');
+        await runTestModule('../js/games/tic-tac-toe/tests/ticTacToe.test.js', 'Tic-Tac-Toe');
+        await runTestModule('../js/games/eight-queens/tests/eightQueens.test.js', 'Eight Queens');
+        await runTestModule('../js/games/knights-tour/tests/knightsTour.test.js', 'Knight\'s Tour');
+        await runTestModule('../js/games/tower-of-hanoi/tests/towerOfHanoi.test.js', 'Tower of Hanoi');
+        
+        console.log('All test suites completed');
+        updateSummary();
+      } catch (error) {
+        console.error('Error running all tests:', error);
+        resultsDiv.innerHTML += `<div class="text-danger">Error: ${error.message}</div>`;
+        
+        updateSummary();
+      } finally {
+        resetConsoleIntercept();
+      }
+    });
+  </script>
+</body>
+</html>
