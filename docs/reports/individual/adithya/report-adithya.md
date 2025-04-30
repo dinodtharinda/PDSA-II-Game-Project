@@ -55,7 +55,7 @@ The UCT formula used: UCT = average_win_rate + C × √(ln(parent_visits) / node
 
 ### 1.3 Algorithm Performance Comparison
 
-![Tic-Tac-Toe Algorithm Performance](data:image/placeholder.png)
+![Tic-Tac-Toe Algorithm Performance](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tic-tac-toe.png)
 
 **Performance Analysis:**
 - **Early Game (Many Empty Spaces):**
@@ -72,19 +72,7 @@ The UCT formula used: UCT = average_win_rate + C × √(ln(parent_visits) / node
 
 ### 1.4 Algorithm Time Comparison (10 Game Rounds)
 
-| Game Round | Minimax (ms) | MCTS (ms) | Performance Difference |
-|------------|--------------|-----------|------------------------|
-| 1          | 2457         | 1845      | MCTS 24.9% faster      |
-| 2          | 2389         | 1790      | MCTS 25.1% faster      |
-| 3          | 2512         | 1876      | MCTS 25.3% faster      |
-| 4          | 2403         | 1823      | MCTS 24.1% faster      |
-| 5          | 2467         | 1856      | MCTS 24.8% faster      |
-| 6          | 2521         | 1881      | MCTS 25.4% faster      |
-| 7          | 2498         | 1862      | MCTS 25.5% faster      |
-| 8          | 2476         | 1859      | MCTS 24.9% faster      |
-| 9          | 2534         | 1893      | MCTS 25.3% faster      |
-| 10         | 2445         | 1837      | MCTS 24.9% faster      |
-| **Average**| **2470.2**   | **1852.2**| **MCTS 25.0% faster**  |
+![Tic-Tac-Toe 10 Rounds Performance Comparison](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tic-tac-toe-10-rounds.png)
 
 **Interpretation:**
 - MCTS consistently outperforms Minimax in execution time
@@ -222,7 +210,7 @@ function topDownTSP(cities, distances, homeCity) {
 
 ### 2.3 Algorithm Performance Comparison
 
-![TSP Algorithm Performance](data:image/placeholder.png)
+![TSP Algorithm Performance](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tsp.png)
 
 **Performance Analysis:**
 - **Nearest Neighbor:**
@@ -241,19 +229,7 @@ function topDownTSP(cities, distances, homeCity) {
 
 ### 2.4 Algorithm Time Comparison (10 Game Rounds)
 
-| Game Round | Nearest Neighbor (ms) | Recursive B&B (ms) | Dynamic Programming (ms) |
-|------------|-----------------|-----------------|------------------------|
-| 1          | 2.3             | 654.2           | 142.6                  |
-| 2          | 2.1             | 687.5           | 136.8                  |
-| 3          | 2.5             | 701.3           | 145.2                  |
-| 4          | 2.2             | 663.8           | 139.7                  |
-| 5          | 2.4             | 692.1           | 144.3                  |
-| 6          | 2.3             | 678.6           | 140.9                  |
-| 7          | 2.4             | 697.4           | 143.1                  |
-| 8          | 2.2             | 682.9           | 141.8                  |
-| 9          | 2.5             | 703.5           | 146.4                  |
-| 10         | 2.3             | 674.2           | 139.5                  |
-| **Average**| **2.32**        | **683.55**      | **142.03**             |
+![TSP 10 Rounds Performance Comparison](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tsp-10-rounds.png)
 
 **Interpretation:**
 - Nearest Neighbor is approximately 295 times faster than Recursive Branch and Bound
@@ -399,7 +375,9 @@ function frameStewartTOH(n, source, destination, aux1, aux2, moves = []) {
 
 ### 3.3 Algorithm Performance Comparison
 
-![Tower of Hanoi Algorithm Performance](data:image/placeholder.png)
+![Tower of Hanoi Algorithm Performance - Recursive](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tower-of-hanoi-recursive.png)
+
+![Tower of Hanoi Algorithm Performance - Iterative](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tower-of-hanoi-iterative.png)
 
 **Performance Analysis:**
 - **Recursive vs. Iterative (3 pegs):**
@@ -414,19 +392,7 @@ function frameStewartTOH(n, source, destination, aux1, aux2, moves = []) {
 
 ### 3.4 Algorithm Time Comparison (10 Game Rounds)
 
-| Game Round | Recursive (ms) | Iterative (ms) | Frame-Stewart (ms) | Disk Count |
-|------------|--------------|--------------|-------------------|------------|
-| 1          | 3.2          | 2.1          | 1.8               | 5          |
-| 2          | 3.4          | 2.3          | 1.9               | 5          |
-| 3          | 5.7          | 3.8          | 2.6               | 6          |
-| 4          | 5.9          | 4.1          | 2.7               | 6          |
-| 5          | 11.3         | 7.5          | 4.2               | 7          |
-| 6          | 11.7         | 7.9          | 4.3               | 7          |
-| 7          | 22.5         | 15.6         | 6.5               | 8          |
-| 8          | 45.2         | 31.3         | 9.8               | 9          |
-| 9          | 46.1         | 32.1         | 10.1              | 9          |
-| 10         | 92.4         | 63.7         | 15.8              | 10         |
-| **Average**| **24.74**    | **17.04**    | **5.97**          | **7.2**    |
+![Tower of Hanoi 10 Rounds Performance Comparison](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/tower-of-hanoi-10-rounds.png)
 
 **Interpretation:**
 - Iterative algorithm is approximately 31% faster than the recursive approach
@@ -562,7 +528,9 @@ onmessage = function(e) {
 
 ### 4.3 Algorithm Performance Comparison
 
-![Eight Queens Algorithm Performance](data:image/placeholder.png)
+![Eight Queens Sequential Algorithm Performance](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/eight-queens-sequentional.png)
+
+![Eight Queens Threaded Algorithm Performance](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/eight-queens-threaded.png)
 
 **Performance Analysis:**
 - **Sequential vs. Threaded:**
@@ -577,19 +545,7 @@ onmessage = function(e) {
 
 ### 4.4 Algorithm Time Comparison (10 Game Rounds)
 
-| Game Round | Sequential (ms) | Threaded-4 (ms) | Threaded-8 (ms) | Solution Count |
-|------------|--------------|---------------|---------------|---------------|
-| 1          | 118.6        | 38.2          | 23.4          | 92            |
-| 2          | 122.3        | 39.5          | 24.1          | 92            |
-| 3          | 120.9        | 38.7          | 23.8          | 92            |
-| 4          | 119.7        | 38.9          | 24.0          | 92            |
-| 5          | 121.4        | 39.1          | 23.9          | 92            |
-| 6          | 123.2        | 39.8          | 24.3          | 92            |
-| 7          | 119.8        | 38.5          | 23.6          | 92            |
-| 8          | 122.5        | 39.4          | 24.2          | 92            |
-| 9          | 120.6        | 38.8          | 23.7          | 92            |
-| 10         | 121.8        | 39.3          | 24.1          | 92            |
-| **Average**| **121.08**   | **39.02**     | **23.91**     | **92**        |
+![Eight Queens Solutions Performance Comparison](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/eight-queens-solutions.png)
 
 **Interpretation:**
 - Threaded implementation with 4 workers is approximately 3.1× faster than sequential
@@ -723,7 +679,7 @@ function warnsdorffKnightsTour(boardSize, startRow, startCol) {
 
 ### 5.3 Algorithm Performance Comparison
 
-![Knight's Tour Algorithm Performance](data:image/placeholder.png)
+![Knight's Tour Algorithm Performance](/home/adithya/dev/NIBM/game-project/docs/reports/individual/adithya/knights-tour.png)
 
 **Performance Analysis:**
 - **Backtracking vs. Warnsdorff's:**
